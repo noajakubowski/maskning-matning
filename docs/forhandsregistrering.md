@@ -622,3 +622,77 @@ samma anda som korruptionstakten 30 %:
 | 1000 tecken som nämnare | Matchningsregeln | Noas beslut. Konventionell skala, inte härledd. |
 | Tre mätuppsättningar | Mätuppsättningar | Följer av att två detektorer jämförs var för sig och tillsammans. |
 | Jämn fördelning av telefonformer | E1 | Noas beslut, se E1. |
+
+---
+
+## Tillägg F — hög 3, kollisionslistan — 2026-08-22
+
+Besluten nedan fattades **2026-08-22**, efter tillägget i commit 57605fd
+men före all modulkod. De är låsta från och med detta tillägg.
+
+### F1 — Hög 3:s namnkvot delas
+
+Grunddokumentet anger kvoten 400 namndelar per hög men säger inte hur
+hög 3:s kvot fördelas mellan kollisionsord och vanliga namn. Detta avsnitt
+anger det.
+
+```
+hög 3, 400 namndelar
+   200  kollisionsord    ur listan i generator/kollisionslista.md
+   200  vanliga namn     ur namnpoolen, som i hög 1
+```
+
+De 200 vanliga namnen finns för att mäta om lexikonet blir sämre på
+vanliga namn i ett dokument som också innehåller kollisioner. Utan dem
+finns ingen jämförelsepunkt och hög 3 mäter bara kollisionsorden isolerat.
+
+Precision: ±4,2 procentenheter för vardera delen vid frekvens kring
+10 procent, samma som övriga typer. Delarna redovisas var för sig, aldrig
+sammanslaget.
+
+Grund för den jämna delningen: Noas beslut. Det finns ingen mätning av
+hur ofta kollisionsord förekommer i verklig myndighetstext. Lika
+fördelning valdes för att båda delarna ska mätas med samma precision.
+
+### F2 — Kollisionslistans ursprung
+
+Listan innehåller **26 ord**. Den härleddes av en lokal språkmodell utan
+tillgång till projektets material. Prompter och råa svar är bevarade
+ordagrant i `verktyg/kollisionskalla/`. Varje ord i listan går att hitta
+ordagrant i något av de fyra svaren.
+
+Skäl till den vägen: varken Claude eller Cursor kunde göra härledningen
+bevisbart, eftersom båda hade läst `docs/filterregel.md` inklusive den
+förutsagda överflaggningslistan i samma session. En extern modell gör
+oberoendet granskningsbart i stället för påstått.
+
+Urvalsregel: ur de råa svaren har ord endast strukits, aldrig lagts till.
+Strykning skedde på två grunder: ordet är inte ett fritt svenskt ord eller
+inte ett registrerat namn, eller ordet når inte sitt arks lexikontröskel
+och kan därför inte utlösa en flagga.
+
+Andra grunden med skäl: ett ord som inte finns i detektorns lexikon ger
+varken träff eller överflaggning i hög 3. Det testar ingenting och skulle
+förbruka kvot utan att mäta.
+
+### F3 — Känd försvagning av oberoendet
+
+Den fjärde och sista prompten till språkmodellen formulerades efter att
+lexikontröskeln var uträknad, och bad om efternamn som "minst några tusen
+personer" bär. Den som skrev prompten kände alltså till ungefär var
+tröskeln låg.
+
+Att be om vanliga efternamn modellerar verkligheten och inte detektorn —
+vanliga namn är vanliga oavsett vad lexikonet innehåller. Men kunskapen om
+tröskeln fanns när prompten skrevs, och oberoendet är därför svagare för
+de ord som kom ur den fjärde omgången än för de tidigare. Fem ord i listan
+kommer därifrån: Ström, Gran, Ljung, Mark, Sköld.
+
+Ingen åtgärd vidtas. Begränsningen redovisas.
+
+### F4 — Repetition som känd begränsning
+
+26 ord mot 200 kollisionsplatser ger omkring åtta användningar per ord i
+varje hög. Det innebär att resultatet för hög 3 påverkas mer av enskilda
+ords egenskaper än av bredden i svenskt språkbruk, och att ett större
+underlag hade varit bättre. Tiden medgav inte fler omgångar.

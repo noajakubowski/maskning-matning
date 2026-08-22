@@ -1,0 +1,9 @@
+Lista svenska efternamn som mycket många svenskar bär — minst några tusen personer — och som samtidigt är helt vanliga svenska ord.
+
+Ordet måste kunna stå ensamt i en mening, inte bara som del av ett längre ord. "Berg" duger, eftersom man kan skriva "ett berg". "Havs" duger inte, eftersom det bara finns i "havsområde".
+
+Ge 25 stycken. Ett per rad: efternamnet — ordets betydelse — en mening där ordet står ensamt.
+
+Ta inte med: Berg, Lind, Holm, Björk, Lund, Nord, Bäck, Skog, Hult, Söder, Fält, Sand, Mörk, Hed.
+
+Upprepa inget ord.

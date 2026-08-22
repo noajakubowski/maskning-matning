@@ -1,0 +1,20 @@
+Torp — en liten gård eller by. *Ansökan om bostad innehåller adressuppgifter som "Torp 3".*
+Sand — fin sand. *Myndighetsdokument beskriver "Sandsjö" som en kommun.*
+Fält — mark. *En kompetensbedömning nämner "fältarbete" i en utredning.*
+Skott — skott (våldsam handling). *Polisrapporten beskriver ett "skott i natt".*
+Röd — röd (färg). *Styrelsebeslut innehåller "röd linje" i en budget.*
+Blom — blomma (blomst). *Företagsnamn som "Blom AB" förekommer i register.*
+Väg — väg (väg). *En trafikrapport refererar till "vägen vid gränsen".*
+Mörk — mörkt (mörker). *En miljöbedömning beskriver "mörk mark".*
+Längd — längd (mätning). *En teknisk standard beskriver "längd i meter".*
+Sikt — syn. *En länsstyrelse beskriver "näringslivets syn".*
+Växte — växt (biologiskt). *En miljöutredning nämner "växte i mark".*
+Havs — hav (havet). *En plan för havsomsättning innehåller "havsområde".*
+Rik — rik (rikedom). *En statlig rapport beskriver "riktig balans".*
+Väst — väst (riktning). *En regional plan beskriver "västra delen".*
+Norr — norr (riktning). *En trafikställning finns i "nordliga" området.*
+Söder — södra (södra delen). *En regionplan refererar till "södra Sverige".*
+Öst — öst (riktning). *En gränsrapport nämner "östra Sverige".*
+Nord — nord (riktning). *En klimatrapport beskriver "nordiskt klimat".*
+Fjärd — fjär (vattendrag). *En havsplan innehåller "fjärdhavet".*
+Käll — källa (källa). *En miljöutredning beskriver "källbädd".*

@@ -1,0 +1,7 @@
+Ge mig svenska ord som stavas exakt likadant som vanliga svenska personnamn eller efternamn, men som också har en helt vanlig betydelse i löptext.
+
+Exempel på vad jag menar: ett ord som kan vara både ett djur och ett förnamn, eller både ett träd och ett efternamn.
+
+Jag vill ha 60 stycken. För varje: ordet, dess vanliga betydelse, och en kort svensk exempelmening där ordet används i sin vanliga betydelse.
+
+Ta både förnamn och efternamn. Ta gärna ortnamn som också är efternamn.

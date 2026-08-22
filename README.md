@@ -18,8 +18,8 @@ Ingen historikomskrivning. Ingen squash. Ingen force-push.
 | Mapp | Innehåll |
 |---|---|
 | docs/ | Förhandsregistrering och masterdokument |
-| verktyg/ | Skript utanför mätkedjan |
-| generator/ | M1 — syntetiska dokument med facit |
+| verktyg/ | Skript utanför mätkedjan; `kollisionskalla/` med råmaterial för hög 3 |
+| generator/ | M1 — syntetiska dokument med facit; `kollisionslista.md` för hög 3 |
 | detektor/ | M2 — mönster- och lexikondetektor |
 | regelmotor/ | M3 — regel-id och hash |
 | matning/ | M4 — poängsättning mot facit |

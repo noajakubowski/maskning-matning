@@ -1,0 +1,7 @@
+Lista svenska ord som stavas exakt som riktiga svenska efternamn.
+
+Krav: ordet måste finnas i svensk ordbok med en egen betydelse, OCH vara ett efternamn som verkliga svenskar bär.
+
+Ge 20 stycken. Ett per rad, format: ord — betydelse.
+
+Upprepa aldrig ett ord. Ta bara med ord du är säker på.

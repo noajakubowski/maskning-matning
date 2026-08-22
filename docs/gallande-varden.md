@@ -10,7 +10,7 @@ här, med hänvisning till tillägget.
 | Kvot namndelar per hög | 400 | grunddokumentet 1f30aee | (inget) |
 | Kvot personnummer per hög | 400, delat 200 tiosiffriga och 200 tolvsiffriga | Tillägg C, f0961ef | 200 i grunddokumentet, rad 46–47, 56, 305 |
 | Kvot telefonnummer per hög | 200, delat jämnt över tre skrivformer | Tillägg E | (inget) |
-| Personnummerformer | tio- och tolvsiffriga, med och utan bindestreck | Tillägg C och E | enbart tiosiffriga i Beslut A, rad 351 |
+| Personnummerformer | tio- och tolvsiffriga, med och utan bindestreck | Tillägg C och E | enbart tiosiffriga i Beslut A, rad 353 |
 | Telefonnummerformer | tre skrivformer | Tillägg E | ospecificerat tidigare |
 | Datumled | månad 01–12, dag 01–31, ingen kalenderkontroll | Tillägg E | ospecificerat tidigare |
 | Samordningsnummer | byggs inte, känd begränsning | Tillägg E | (inget) |
@@ -23,6 +23,8 @@ här, med hänvisning till tillägget.
 | Kollisionsspärr | kopieringsförbud, inte överlappsförbud | Tillägg E | spärren i filterregel.md |
 | Frysningen binder | vid commit av första M4-resultat på redovisat frö | Tillägg E | tabellhuvudets formulering rad 305 |
 | Redovisning | per typ och längdform, aldrig sammanslaget | Tillägg C och E | "per typ" i grunddokumentet |
+| Hög 3, namnkvotens fördelning | 200 kollisionsord, 200 vanliga namn | Tillägg F | ospecificerat tidigare |
+| Kollisionslista | 26 ord, `generator/kollisionslista.md` | Tillägg F | ospecificerat tidigare |
 
 ## När frysningen binder
 

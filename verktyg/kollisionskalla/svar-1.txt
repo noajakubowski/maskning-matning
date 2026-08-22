@@ -1,0 +1,64 @@
+Här är 60 svenska ord som både kan vara Vanliga svenska personnamn (för- eller efternamn) och har en gemensam betydelse i text. Varje exempel innehåller ordet, dess vanliga betydelse och en kort mening:
+
+1. Björn – björn (djur: björn), namn. Björnen sov i sin bur.
+2. Troll – troll (mytisk varelse), namn. Det råkade ett troll i skogen.
+3. Kaj – kaj (bit av kust), namn. Vi promenerade på kajen.
+4. Fisk – fisk (djur), namn. Lars säg att fisk var hans favorit.
+5. Timmern – timmer (trä), namn. På stugan fanns mycket timmer.
+6. Häst – häst (djur), namn. Anne säljde sin häst.
+7. Löv – löv (trädets blad), namn. Fjärilen landade på ett löv.
+8. Sång – sång (musik), namn. Marianna hade en särskild sång.
+9. Väst – väst (riktning), namn. Söder och väst är kända platser.
+10. Skala – skala (övergripande), namn. Skalas mål var att bygga en ny skola.
+11. Katt – katt (djur), namn. Jag har en katt som heter Katt.
+12. Näck – näck (mytisk varelse), namn. Ormen gick på vattendraget.
+13. Löp – löp (stiga), namn. Daniel löp till byn.
+14. Kärna – kärna (inre del), namn. På grund av kärnan var det en tidskris.
+15. Sylt – sylt (sötsak), namn. Sylten var tillräcklig för sönerna.
+16. Kyrka – kyrka (byggnad), namn. Matteus gick till kyrkan.
+17. Sov – sov (slap), namn. När jag sov, hörde jag ljud.
+18. Troll – troll (mytisk varelse), namn. Jag träffade ett troll i skogen.
+19. Ski – ski (sportinstrument), namn. Karin skidade på sin ski.
+20. Lina – lina (sträng), namn. Han knöt en lina runt trädet.
+21. Maj – maj (månad), namn. Majs favorit månad var maj.
+22. Bäck – bäck (vattendrag), namn. Larsson gick vid bäcken.
+23. Staf – staf (slagord), namn. Han använde staf för att råda.
+24. Sten – sten (material), namn. Pär knyckte en sten i vatten.
+25. Tid – tid (tidsperiod), namn. Anna fick en tid för att förbereda.
+26. Fisk – fisk (djur), namn. Lars har en fisk som heter Fisk.
+27. Bräcka – bräcka (vattentid), namn. De spring till bräckan.
+28. Kall – kall (tillstånd), namn. Han gick ut i den kalla vintern.
+29. Djur – djur (djurett), namn. Det var ett djur i skogen.
+30. Björn – björn (djur), namn. Han kallades för Björn.
+31. Löv – löv (blad), namn. Det fanns löv på trädet.
+32. Väst – väst (riktning), namn. Sönerna gick mot väst.
+33. Skala – skala (övergripande), namn. Skalas mål var att bygga en ny skola.
+34. Bäck – bäck (vattendrag), namn. Larsson gick vid bäcken.
+35. Tid – tid (tidsperiod), namn. Anna fick en tid för att förbereda.
+36. Sten – sten (material), namn. Pär knyckte en sten i vatten.
+37. Kall – kall (tillstånd), namn. Han gick ut i den kalla vintern.
+38. Fisk – fisk (djur), namn. Lars har en fisk som heter Fisk.
+39. Bräcka – bräcka (vattentid), namn. De spring till bräckan.
+40. Skala – skala (övergripande), namn. Skalas mål var att bygga en ny skola.
+41. Maj – maj (månad), namn. Majs favorit månad var maj.
+42. Bäck – bäck (vattendrag), namn. Larsson gick vid bäcken.
+43. Tid – tid (tidsperiod), namn. Anna fick en tid för att förbereda.
+44. Sten – sten (material), namn. Pär knyckte en sten i vatten.
+45. Kall – kall (tillstånd), namn. Han gick ut i den kalla vintern.
+46. Fisk – fisk (djur), namn. Lars har en fisk som heter Fisk.
+47. Bräcka – bräcka (vattentid), namn. De spring till bräckan.
+48. Skala – skala (övergripande), namn. Skalas mål var att bygga en ny skola.
+49. Maj – maj (månad), namn. Majs favorit månad var maj.
+50. Bäck – bäck (vattendrag), namn. Larsson gick vid bäcken.
+51. Tid – tid (tidsperiod), namn. Anna fick en tid för att förbereda.
+52. Sten – sten (material), namn. Pär knyckte en sten i vatten.
+53. Kall – kall (tillstånd), namn. Han gick ut i den kalla vintern.
+54. Fisk – fisk (djur), namn. Lars har en fisk som heter Fisk.
+55. Bräcka – bräcka (vattentid), namn. De spring till bräckan.
+56. Skala – skala (övergripande), namn. Skalas mål var att bygga en ny skola.
+57. Maj – maj (månad), namn. Majs favorit månad var maj.
+58. Bäck – bäck (vattendrag), namn. Larsson gick vid bäcken.
+59. Tid – tid (tidsperiod), namn. Anna fick en tid för att förbereda.
+60. Sten – sten (material), namn. Pär knyckte en sten i vatten.
+
+Notering: Vissa ord (t.ex. Fisk, Troll) är mer stora namn i svenska kulturer, men de fungerar enligt kraven. Det kan finnas variationer i hur vanliga namn är, men de valdes för att matcha de önskade kriterierna.
