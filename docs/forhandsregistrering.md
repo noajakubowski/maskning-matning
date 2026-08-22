@@ -457,3 +457,168 @@ verklig frekvens. En viktad fördelning hade krävt ett tal utan underlag.
 
 Resultat redovisas per form, aldrig sammanslaget — samma skäl som håller
 förnamn och efternamn åtskilda.
+
+---
+
+## Tillägg E — format, matchning och statistik — 2026-08-22
+
+Besluten nedan fattades **2026-08-22**, efter tillägget i commit f0961ef
+men före all modulkod. De är låsta från och med detta tillägg.
+
+En fullständig granskning av dokumentationen gjordes före byggstart. Den
+hittade luckor som påverkar mätresultatet; detta avsnitt stänger dem.
+Luckor som inte påverkar resultatet har flyttats till
+[`byggspec.md`](byggspec.md).
+
+### E1 — Telefonnummerformat
+
+Tre skrivformer planteras och detekteras, jämnt fördelade över kvoten 200:
+
+```
+med skiljetecken     070-123 45 67
+utan skiljetecken    0701234567
+internationellt      +46701234567
+```
+
+Formkontroll, aldrig operatörskontroll: detektorn kontrollerar att strängen
+ser ut som ett svenskt telefonnummer, inte om numret finns. Samma princip
+som personnummer.
+
+Grund för jämn fördelning: Noas beslut. Det finns ingen mätning av hur
+formerna fördelar sig i svenska myndighetsdokument. Lika fördelning valdes
+för att alla tre ska mätas lika, inte för att spegla en frekvens.
+
+### E2 — Redovisningsnivå för format
+
+Konfidensintervall redovisas per typ och per längdform, inte per
+skrivvariant:
+
+```
+med CI          personnummer tiosiffriga     n=200   ±4,2 pe
+                personnummer tolvsiffriga    n=200   ±4,2 pe
+                telefonnummer                n=200   ±4,2 pe
+                förnamn / efternamn          per namndel
+
+utan CI         skrivvarianter inom en form (bindestreck, mellanslag,
+                landskod) redovisas beskrivande — antal planterade och
+                antal missade, som indikation
+```
+
+Skäl: CI per skrivvariant hade krävt att kvoten tredubblades. Beskrivande
+redovisning är svagare men ärlig, och variationen finns kvar i korpusen.
+
+### E3 — Personnummer, skrivvarianter och datumled
+
+Båda längdformerna förekommer med och utan bindestreck:
+
+```
+890101-2384      8901012384
+19890101-2384    198901012384
+```
+
+Datumledet kontrolleras som form: månad 01–12, dag 01–31. Ingen
+skottårskontroll, ingen kalenderkontroll. Ett datum som 890231 accepteras
+alltså av detektorn. Detta är avsiktligt: ett maskningsverktyg ska svärta
+allt som ser ut som ett personnummer, och det billiga felet väljs framför
+det dyra.
+
+Samordningsnummer byggs inte i version ett. Känd begränsning: samordningsnummer
+har dag +60 och förekommer i myndighetsdokument. Varken generator eller
+detektor hanterar dem, och riggen kan därför inte mäta hur ofta de missas.
+Detta är en blind fläck av samma slag som tolvsiffriga nummer var före
+Tillägg C, och den redovisas i stället för att byggas bort.
+
+### E4 — Lexikonmatchning
+
+Lexikondetektorn matchar hela ord:
+
+| Regel | Detalj |
+|---|---|
+| Skiftläge | Okänsligt — Bo, BO och bo behandlas lika |
+| Ordgräns | Allt som inte är en bokstav |
+| Följd | DE matchar **inte** i DESIGN |
+| Följd | bo matchar i "att bo kvar" |
+| Bindestreck | Anna-Karin matchas som två segment, Anna och Karin |
+| Partiklar | von, af, de matchas **inte** som namn i version ett |
+
+Ordgränsregeln avgör hur stor den förutsagda överflaggningen från BO, EK
+och DE faktiskt blir, och måste därför stå före körningen.
+
+### E5 — Korruption, exakt tillämpning
+
+```
+takt        30 % av samtliga planterade uppgifter i hög 2, samlat
+            över alla typer — inte 30 % per typ
+antal       högst en skada per planterad uppgift
+plats       skadan träffar endast uppgiftens eget teckenspann,
+            aldrig omgivande text
+val         vilken uppgift som skadas avgörs av högens frö
+```
+
+Skäl till högst en skada: två skador på samma uppgift gör den oigenkännlig
+även för en människa, och mätningen ska visa vad ett maskningsverktyg
+missar, inte vad ingen kan läsa.
+
+### E6 — Statistisk metod
+
+Konfidensintervall beräknas med **Wilsons metod**. Skäl: den
+normalapproximation som ligger bakom ±3-motiveringen uppför sig dåligt vid
+låga frekvenser och nära noll, vilket är precis det område mätningen
+väntas hamna i. Wilson ger intervall som håller sig inom 0–100 % och är
+rätt även vid få träffar.
+
+Överflaggning per 1000 tecken redovisas som punktvärde utan CI. Skäl: det
+är ett kvotmått över hela korpusen och inte en andel av oberoende försök,
+så samma intervallmetod gäller inte.
+
+### E7 — Teckenkodning
+
+```
+kodning         UTF-8
+normalisering   NFC, tillämpas på texten innan facit skrivs
+radslut         LF
+position        teckenindex i den normaliserade texten,
+                inte byteindex
+```
+
+Skäl: facit och detektor måste räkna samma index på samma text. Utan
+angiven normalisering kan å skrivas som ett tecken eller två, och alla
+positioner efter det förskjuts.
+
+### E8 — Namndel och ark
+
+Generatorn registrerar i facit vilket av filterregelns fem ark varje
+planterad namndel hämtades ur: efternamn, förnamn kvinnor, förnamn män,
+tilltalsnamn kvinnor, tilltalsnamn män. Utan det kan M4 inte redovisa per
+ark, eftersom samma sträng kan förekomma i flera ark.
+
+### E9 — Rättelse av kollisionsspärren
+
+[`filterregel.md`](filterregel.md) innehåller en spärr: ingen post ur
+detektorns förutsagda överflaggningslista får förekomma i generatorns
+kollisionslista. Den spärren är **felaktig** och gäller **inte**.
+
+Skäl: BO och EK är de mest självklara svenska orden som också är namn. Att
+förbjuda dem i hög 3 därför att M2 råkar innehålla dem är att modellera
+detektorn, vilket den styrande regeln uttryckligen förbjuder. Spärren
+skyddade mot fel sak.
+
+**Gällande spärr:** generatorns kollisionslista får inte kopieras ur eller
+härledas ur detektorns lexikon eller ur filterregel.md. Den härleds ur
+svenska ord som råkar vara namn. Att listorna överlappar är oundvikligt
+och korrekt, av samma skäl som namnpoolen tillåts överlappa.
+
+filterregel.md ändras inte — den är commitad och rättas här.
+
+### E10 — Tal utan mätunderlag
+
+Följande tal är Noas beslut utan mätunderlag och redovisas som sådana, i
+samma anda som korruptionstakten 30 %:
+
+| Tal | Var | Grund |
+|---|---|---|
+| 6–8 meningsmallar per dokumenttyp | Beslut B | Noas beslut. Tillräckligt för variation, byggbart på tillgänglig tid. |
+| Tre dokumenttyper | Beslut B | Noas beslut. Täcker ansökan, anteckning och beslut som vanliga former. |
+| 1000 tecken som nämnare | Matchningsregeln | Noas beslut. Konventionell skala, inte härledd. |
+| Tre mätuppsättningar | Mätuppsättningar | Följer av att två detektorer jämförs var för sig och tillsammans. |
+| Jämn fördelning av telefonformer | E1 | Noas beslut, se E1. |

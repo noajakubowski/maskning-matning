@@ -3,7 +3,7 @@
 Verktyg som maskar personuppgifter i myndighetsdokument, och en mätrigg som
 redovisar hur ofta det misslyckas mot ett känt facit.
 
-Status: repot är nyss skapat. Ingen kod är skriven.
+Status: inga moduler är byggda. `verktyg/` innehåller ett granskningsskript.
 
 ## Ordning
 
@@ -18,6 +18,7 @@ Ingen historikomskrivning. Ingen squash. Ingen force-push.
 | Mapp | Innehåll |
 |---|---|
 | docs/ | Förhandsregistrering och masterdokument |
+| verktyg/ | Skript utanför mätkedjan |
 | generator/ | M1 — syntetiska dokument med facit |
 | detektor/ | M2 — mönster- och lexikondetektor |
 | regelmotor/ | M3 — regel-id och hash |
@@ -26,6 +27,14 @@ Ingen historikomskrivning. Ingen squash. Ingen force-push.
 | cli/ | Ingång från terminalen |
 
 Ingen delad lib/. Generatorn och detektorerna delar ingen kod och inga listor.
+
+## Dokumentationens tre filer
+
+| Fil | Roll |
+|---|---|
+| `docs/forhandsregistrering.md` | Append-only. Låser det som påverkar mätresultatet. |
+| `docs/gallande-varden.md` | Vilka värden som gäller nu vid konflikt mellan avsnitt. |
+| `docs/byggspec.md` | Hur modulerna byggs. Får ändras fritt. |
 
 ## Licens och källor
 
