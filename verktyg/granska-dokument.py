@@ -8,6 +8,14 @@ föll på form i stället för på sak.
 
 Det här skriptet normaliserar både dokument och sökfras innan jämförelse, så
 att granskning testar vad läsaren ser, inte hur filen är radbruten.
+
+Avslutningskoder:
+  0  granskat, inga brister
+  1  granskat, brister hittades
+  2  granskade ingenting — anropet saknade kontroller
+
+Kod 2 och inte 1: en etta betyder att dokumentet är fel, en tvåa att anropet
+är fel. De ska inte gå att förväxla, eftersom de kräver olika åtgärd.
 """
 
 from __future__ import annotations
@@ -51,6 +59,34 @@ def skriv_kontroll(
     return ok
 
 
+def granska_dokument(
+    dokument: str,
+    kraver: list[str],
+    forbjuder: list[str],
+) -> int:
+    if not kraver and not forbjuder:
+        print(
+            "Fel: inga kontroller angivna (--kraver eller --forbjuder krävs).",
+            file=sys.stderr,
+        )
+        return 2
+
+    alla_ok = True
+
+    for i, fras in enumerate(kraver, start=1):
+        ok = skriv_kontroll(f"krav {i}", fras, dokument, ska_finns=True)
+        alla_ok = alla_ok and ok
+
+    for i, fras in enumerate(forbjuder, start=1):
+        ok = skriv_kontroll(f"förbud {i}", fras, dokument, ska_finns=False)
+        alla_ok = alla_ok and ok
+
+    if alla_ok:
+        return 0
+
+    return 1
+
+
 def kor_sjalvtest() -> int:
     fall = [
         (
@@ -90,6 +126,23 @@ def kor_sjalvtest() -> int:
     for namn, text, sokfras, ska_finns in fall:
         ok = skriv_kontroll(namn, sokfras, text, ska_finns)
         alla_ok = alla_ok and ok
+
+    kod = granska_dokument("valfri text", [], [])
+    if kod == 2:
+        print("OK  anrop utan kontroller ger kod 2")
+    else:
+        print(
+            f"BRIST  anrop utan kontroller (förväntade kod 2, fick {kod})",
+            file=sys.stderr,
+        )
+        alla_ok = False
+
+    kod = granska_dokument("hej världen", ["hej"], [])
+    if kod != 2:
+        print("OK  anrop med minst en kontroll ger inte kod 2")
+    else:
+        print("BRIST  anrop med kontroll gav kod 2", file=sys.stderr)
+        alla_ok = False
 
     if alla_ok:
         print("Självtest: alla fall OK")
@@ -137,23 +190,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("FIL krävs om --sjalvtest inte anges.")
 
     dokument = Path(args.fil).read_text(encoding="utf-8")
-    alla_ok = True
-
-    for i, fras in enumerate(args.kraver, start=1):
-        ok = skriv_kontroll(f"krav {i}", fras, dokument, ska_finns=True)
-        alla_ok = alla_ok and ok
-
-    for i, fras in enumerate(args.forbjuder, start=1):
-        ok = skriv_kontroll(f"förbud {i}", fras, dokument, ska_finns=False)
-        alla_ok = alla_ok and ok
-
-    if not args.kraver and not args.forbjuder:
-        print("Varning: inga krav eller förbud angivna.", file=sys.stderr)
-
-    if alla_ok:
-        return 0
-
-    return 1
+    return granska_dokument(dokument, args.kraver, args.forbjuder)
 
 
 if __name__ == "__main__":
