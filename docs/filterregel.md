@@ -73,4 +73,128 @@ nedan med bärarantal när räkningen är körd. De höjer överflaggningen.
 Ingen åtgärd vidtas: överflaggning är det billiga felet och ska redovisas,
 inte gömmas.
 
-<!-- RESULTAT FYLLS I AV NÄSTA COMMIT -->
+## Utfall v2, rå terminalutskrift
+
+```
+REGEL v2: delning på bindestreck OCH mellanslag (ej apostrof),
+          segment >= 2 tecken, ingen kolon eller punkt
+
+========================================================================
+ARK: Efternamn
+
+-- topp 1000 --
+  uteslutna ............. 0
+  TÄCKNING EFTER FILTER . 47.72 %   (före: 47.72 %)
+  KÄND FÖRORENING, poster under 3 tecken som passerar: 5
+    KVAR 'EK'                 8764
+    KVAR 'LI'                 2528
+    KVAR 'LE'                 1545
+    KVAR 'WU'                 1149
+    KVAR 'XU'                 1023
+
+-- topp 5000 --
+  uteslutna ............. 0
+  TÄCKNING EFTER FILTER . 62.32 %   (före: 62.32 %)
+  kontroll 'MD'            8  BEHÅLLS
+  kontroll 'BO'           17  BEHÅLLS
+  kontroll 'MY'            2  BEHÅLLS
+  kontroll 'LI'         2528  BEHÅLLS
+  kontroll 'ED'          236  BEHÅLLS
+  kontroll 'UR'            2  BEHÅLLS
+
+========================================================================
+ARK: Förnamn kvinnor
+
+-- topp 1000 --
+  uteslutna ............. 2
+  TÄCKNING EFTER FILTER . 85.06 %   (före: 85.08 %)
+    UT  'M'                  1170  (segment under 2 tecken)
+    UT  'A'                   942  (segment under 2 tecken)
+  KÄND FÖRORENING, poster under 3 tecken som passerar: 4
+    KVAR 'MY'                10664
+    KVAR 'LO'                 4271
+    KVAR 'LI'                 3529
+    KVAR 'DE'                 1241
+
+-- topp 5000 --
+  uteslutna ............. 18
+  TÄCKNING EFTER FILTER . 93.41 %   (före: 93.45 %)
+  kontroll 'MD'            4  BEHÅLLS
+  kontroll 'MHD'          34  BEHÅLLS
+  kontroll 'BO'          281  BEHÅLLS
+  kontroll 'MY'        10664  BEHÅLLS
+  kontroll 'LI'         3529  BEHÅLLS
+  kontroll 'ED'            7  BEHÅLLS
+  kontroll 'VY'          126  BEHÅLLS
+  kontroll 'UR'           34  BEHÅLLS
+
+========================================================================
+ARK: Förnamn män
+
+-- topp 1000 --
+  uteslutna ............. 2
+  TÄCKNING EFTER FILTER . 86.90 %   (före: 86.93 %)
+    UT  'M'                  1726  (segment under 2 tecken)
+    UT  'A'                  1238  (segment under 2 tecken)
+  KÄND FÖRORENING, poster under 3 tecken som passerar: 3
+    KVAR 'BO'                85448
+    KVAR 'LO'                 1575
+    KVAR 'MD'                 1510
+
+-- topp 5000 --
+  uteslutna ............. 20
+  TÄCKNING EFTER FILTER . 94.62 %   (före: 94.68 %)
+  kontroll 'MD'         1510  BEHÅLLS
+  kontroll 'MHD'        1292  BEHÅLLS
+  kontroll 'BO'        85448  BEHÅLLS
+  kontroll 'MY'           23  BEHÅLLS
+  kontroll 'LI'          160  BEHÅLLS
+  kontroll 'ED'          162  BEHÅLLS
+  kontroll 'VY'           12  BEHÅLLS
+  kontroll 'UR'          172  BEHÅLLS
+
+========================================================================
+ARK: Tilltalsnamn kvinnor
+
+-- topp 1000 --
+  uteslutna ............. 0
+  TÄCKNING EFTER FILTER . 82.26 %   (före: 82.26 %)
+  KÄND FÖRORENING, poster under 3 tecken som passerar: 3
+    KVAR 'MY'                 6418
+    KVAR 'LO'                 2011
+    KVAR 'LI'                 1395
+
+-- topp 5000 --
+  uteslutna ............. 0
+  TÄCKNING EFTER FILTER . 92.88 %   (före: 92.88 %)
+  kontroll 'BO'           65  BEHÅLLS
+  kontroll 'MY'         6418  BEHÅLLS
+  kontroll 'LI'         1395  BEHÅLLS
+  kontroll 'ED'            3  BEHÅLLS
+  kontroll 'VY'           29  BEHÅLLS
+  kontroll 'UR'            5  BEHÅLLS
+
+========================================================================
+ARK: Tilltalsnamn män
+
+-- topp 1000 --
+  uteslutna ............. 0
+  TÄCKNING EFTER FILTER . 84.70 %   (före: 84.70 %)
+  KÄND FÖRORENING, poster under 3 tecken som passerar: 3
+    KVAR 'BO'                35872
+    KVAR 'MD'                 1361
+    KVAR 'LO'                  521
+
+-- topp 5000 --
+  uteslutna ............. 3
+  TÄCKNING EFTER FILTER . 94.33 %   (före: 94.34 %)
+  kontroll 'MD'         1361  BEHÅLLS
+  kontroll 'MHD'        1202  BEHÅLLS
+  kontroll 'BO'        35872  BEHÅLLS
+  kontroll 'MY'            8  BEHÅLLS
+  kontroll 'LI'           71  BEHÅLLS
+  kontroll 'ED'          103  BEHÅLLS
+  kontroll 'VY'            4  BEHÅLLS
+  kontroll 'UR'            8  BEHÅLLS
+```
+
