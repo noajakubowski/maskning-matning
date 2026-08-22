@@ -696,3 +696,71 @@ Ingen åtgärd vidtas. Begränsningen redovisas.
 varje hög. Det innebär att resultatet för hög 3 påverkas mer av enskilda
 ords egenskaper än av bredden i svenskt språkbruk, och att ett större
 underlag hade varit bättre. Tiden medgav inte fler omgångar.
+
+---
+
+## Tillägg G — rättelse av F2, kollisionslistan utökas till 32 ord — 2026-08-22
+
+Besluten nedan fattades **2026-08-22**, efter tillägget i commit 9803656
+men före all modulkod. De är låsta från och med detta tillägg.
+
+### G1 — F2:s andra strykningsgrund gäller inte
+
+F2 angav två grunder för strykning ur råmaterialet. Den första — att
+ordet inte är ett fritt svenskt ord eller inte ett registrerat namn —
+gäller fortfarande. Den andra gäller **inte**: att ordet inte når sitt
+arks lexikontröskel.
+
+Två fel:
+
+**Fel i sak.** F2 påstod att ett ord utanför lexikonet testar ingenting.
+Det är fel. Varje kollisionsord förekommer två gånger i samma dokument,
+en gång som namn och en gång som vanligt ord:
+
+```
+ord i lexikonet         namnförekomst  träff
+                        ordförekomst   överflaggning
+
+ord utanför lexikonet   namnförekomst  MISS
+                        ordförekomst   ingen flagga
+```
+
+Ett ord utanför lexikonet mäter missidan — att detektorn inte hittar ett
+kollisionsnamn som är för ovanligt för lexikonet. Det är den direkta
+konsekvensen av efternamnstaket, och det är projektets mest väsentliga
+fynd.
+
+**Fel mot E9.** E9 anger att generatorns kollisionslista inte får
+härledas ur detektorns lexikon. Lexikontröskeln är detektorns
+lexikondefinition. Att stryka ord för att detektorn inte känner dem är
+härledning ur detektorns lexikon, subtraktivt i stället för additivt. Det
+är samma sak E9 förbjuder och som den styrande regeln kallar att
+modellera detektorn.
+
+### G2 — De sex orden återinförs
+
+Åker, Torp, Vik, Skott, Sjö och Ryd återinförs. Samtliga står ordagrant i
+svarsfilerna i `verktyg/kollisionskalla/` och är registrerade namn i
+SCB-materialet. De ströks enbart på den grund som G1 upphäver.
+
+Kollisionslistan omfattar därmed **32 ord**.
+
+### G3 — Ingen fördelning styrs av lexikonet
+
+Generatorn planterar de 32 orden jämnt över hög 3:s 200 kollisionsplatser,
+omkring sex användningar per ord. Generatorn får **inte** veta vilka ord
+som ligger i lexikonet och får **inte** fördela plantering efter det.
+
+M4 redovisar utfallet per ord. Fördelningen mellan träffar och missar
+faller ut ur mätningen i stället för att byggas in. Det är skillnaden
+mellan att mäta och att konstruera.
+
+### G4 — Vad som därmed mäts
+
+Hög 3 mäter nu båda sidorna: överflaggning på ord som lexikonet känner,
+och missar på kollisionsnamn som är för ovanliga för lexikonet. Den andra
+sidan saknades helt före denna rättelse och felet upptäcktes vid
+oberoende granskning före byggstart.
+
+Repetitionen i F4 uppdateras: omkring **sex** användningar per ord i
+stället för åtta.
