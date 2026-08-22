@@ -376,3 +376,84 @@ princip skulle kunna gynnas av återkommande meningsbyggnad. Det motverkas
 inte av mätuppsättningen, eftersom varken mönster- eller lexikondetektorn
 använder meningskontext i version ett — men det ska stå som en
 begränsning, eftersom det skulle spela roll om en modell tillkom senare.
+
+---
+
+## Tillägg C — personnummerformer och rättelse av Skäl 2 — 2026-08-22
+
+Besluten nedan fattades **2026-08-22**, efter tillägget i commit d14052e
+men före all modulkod. De är låsta från och med detta tillägg.
+
+### C1 — kontrollsiffra och datumled behandlas olika, och varför
+
+Skäl 2 i Beslut A säger att korruptionen i hög 2 bryter kontrollsiffran,
+och att en detektor som krävde giltig kontrollsiffra därför aldrig skulle
+hitta ett skadat personnummer. Argumentet är riktigt men ofullständigt:
+samma korruption bryter också datumledet, som detektorn ändå kontrollerar.
+Skäl 2 anger inte varför de två behandlas olika. Detta avsnitt anger
+skillnaden. Beslut A ändras inte.
+
+Skillnaden ligger i var felet uppstår:
+
+```
+KONTROLLSIFFRAN
+  planteras felaktig med flit, i samtliga högar
+    hög 1, ren      detektorn skulle hitta noll   ← kontrollgruppen förlorar sitt syfte
+    hög 2, trasig   detektorn skulle hitta noll
+
+DATUMLEDET
+  planteras korrekt, skadas bara av korruptionen
+    hög 1, ren      detektorn hittar allt         ← kontrollgruppen fungerar
+    hög 2, trasig   87O514 hittas inte            ← detta ÄR mätningen
+```
+
+Ett krav på giltig kontrollsiffra skulle ge nollträff av konstruktionsskäl i
+alla tre högarna, inklusive kontrollgruppen. Ett krav på giltigt datumled
+ger full träff i hög 1 och missar i hög 2 — och de missarna är ett verkligt
+maskningsfel som hög 2 finns till för att mäta.
+
+Datumkontrollen behålls därför oförändrad, även i hög 2. Missarna som
+korruptionen orsakar är ett mätresultat, inte en artefakt.
+
+### C2 — tolvsiffriga personnummer
+
+Beslut A anger tio siffror. Personnummer skrivs i svenska myndighetsdokument
+i två former:
+
+```
+tiosiffrig    ÅÅMMDD-NNNN        890101-2384
+tolvsiffrig   ÅÅÅÅMMDD-NNNN      19890101-2384
+```
+
+Med endast den tiosiffriga formen i spec skulle generatorn aldrig plantera
+ett tolvsiffrigt nummer och detektorn aldrig leta efter ett. Mätningen skulle
+visa hög träffsäkerhet medan verktyget i drift missar varje tolvsiffrigt
+nummer, och riggen skulle till sin konstruktion inte kunna avslöja det. Detta
+är den felkategori projektet finns till för att fånga.
+
+Båda formerna planteras och detekteras. Formkontrollen gäller fortfarande
+enbart form — kontrollsiffrans värde kontrolleras inte i någon av formerna.
+Skiljetecknet mellan datumled och löpnummer är valfritt.
+
+### C3 — kvot och redovisning
+
+Kvoten för personnummer höjs från 200 till 400 per hög, jämnt delad:
+
+| Form | Antal per hög |
+|---|---|
+| Tiosiffriga | 200 |
+| Tolvsiffriga | 200 |
+
+Precision per form: ±4,2 procentenheter vid frekvens kring 10 procent —
+samma som personnummer hade före delningen. Hade kvoten stannat på 200 hade
+varje form fått ±5,9 pe.
+
+Kvoten för telefonnummer är oförändrad, 200 per hög.
+
+Grund för den jämna delningen: Noas beslut. Det finns ingen mätning av hur
+formerna fördelar sig i svenska myndighetsdokument. Lika fördelning valdes
+för att båda formerna ska mätas med samma precision, inte för att spegla en
+verklig frekvens. En viktad fördelning hade krävt ett tal utan underlag.
+
+Resultat redovisas per form, aldrig sammanslaget — samma skäl som håller
+förnamn och efternamn åtskilda.
