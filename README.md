@@ -47,3 +47,15 @@ Den andra fällan är den farliga: ett hängt mönster ger tom utdata, och ett
 skript som avbryter på "tomt resultat" avbryter då av **rätt utfall men fel
 orsak**. Skript i det här repot ska skilja på "hittade inget" och
 "kommandot fungerade inte".
+
+## Arbetsregel — avbrottsvillkor
+
+Ett verifieringsskript som avslutar med kod 1 stoppar arbetet. Alltid. Code
+rapporterar och väntar; ingen commit sker. Detta gäller även när orsaken vid
+närmare granskning visar sig vara falsk — rätt åtgärd är då att laga
+kontrollen, inte att gå runt den. Ett avbrottsvillkor som ibland ignoreras är
+inget avbrottsvillkor.
+
+Fyra kontroller har hittills fällt på form i stället för sak (radbrytning,
+fetstil, kodmarkering, kolumnjustering). Framtida innehållsgranskning sker via
+`verktyg/granska-dokument.py`, som normaliserar text innan jämförelse.
