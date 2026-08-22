@@ -312,3 +312,67 @@ Version ett: ingen modell, ingen molndel, ingen nyckel.
 | Redovisningsregler | — |
 | Separations- och byggspärrar | — |
 | Krav på ogiltiga personnummer | — |
+
+---
+
+## Tillägg efter frysning — 2026-08-22
+
+Besluten nedan fattades **2026-08-22**, efter frysningen i commit 1f30aee
+men före all modulkod. De är låsta från och med detta tillägg och ska inte
+redigeras in i tidigare avsnitt som om de alltid funnits där.
+
+### Beslut A — personnummer, formkontroll utan kontrollsiffra
+
+M2:s mönsterdetektor kontrollerar **formen** på ett personnummer, aldrig
+kontrollsiffran.
+
+Generatorn planterar personnummer med avsiktligt felaktig kontrollsiffra.
+Det uppfyller kravet att inget planterat nummer kan tillhöra en verklig
+person.
+
+**Skäl 1 — ofarlighetskravet gör giltiga nummer omöjliga.** En detektor som
+krävde giltig kontrollsiffra skulle avvisa exakt de nummer generatorn
+planterar, och träffsiffran skulle bli noll av konstruktionsskäl — inte av
+mätskäl.
+
+**Skäl 2 — hög 2 skulle förlora sitt syfte.** Korruptionen i hög 2
+förvanskar tecken. Varje sådan skada bryter kontrollsiffran. En detektor
+som krävde giltig kontrollsiffra skulle aldrig hitta ett skadat
+personnummer, och högen skulle inte mäta något.
+
+**Principiell grund:** ett maskningsverktyg ska stryka över allt som ser ut
+som ett personnummer. Att släppa igenom en sträng som liknar ett
+personnummer men har fel kontrollsiffra vore farligt i drift. Detta är
+samma avvägning som dokumentet redan gör till förmån för det billiga
+felet.
+
+Formkontrollen omfattar:
+
+| Kontroll | Omfattning |
+|---|---|
+| Längd | Tio siffror |
+| Datumled | Giltigt födelsedatum |
+| Skiljetecken | Valfritt mellan födelsedatum och löpnummer |
+| Kontrollsiffra | **Kontrolleras inte** |
+
+### Beslut B — dokumenttext
+
+Generatorn producerar tre dokumenttyper:
+
+| Typ | Meningsmallar |
+|---|---|
+| Ansökan | 6 till 8 |
+| Tjänsteanteckning | 6 till 8 |
+| Beslut | 6 till 8 |
+
+Uppgifter planteras i mallarna enligt kvoterna.
+
+**Styrande regel:** mallarna modellerar hur myndighetstext ser ut, aldrig
+hur M2 fungerar. Ingen mall får utformas för att vara lätt eller svår för
+detektorn.
+
+**Känd begränsning:** ett begränsat antal mallar betyder att detektorn i
+princip skulle kunna gynnas av återkommande meningsbyggnad. Det motverkas
+inte av mätuppsättningen, eftersom varken mönster- eller lexikondetektorn
+använder meningskontext i version ett — men det ska stå som en
+begränsning, eftersom det skulle spela roll om en modell tillkom senare.
