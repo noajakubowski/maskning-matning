@@ -12,8 +12,29 @@ skilda skäl.
 | URL | https://www.scb.se/contentassets/9fe7dbb460994c72b835163dbc491ef9/namn-med-minst-tva-barare-31-december-2022.xlsx |
 | sha256 | b099822f53baf393fc0dba8b2c8665b7475c3b2001b6efbbe1d96525709792e4 |
 | Referenstid | 31 december 2022 |
-| Status hos SCB | Uppdateras ej. SCB slutade producera namnstatistik från 2024. |
-| Licens | CC BY. Materialet är bearbetat av oss; SCB anges därför inte som källa till de härledda listorna och ansvarar inte för bearbetningen. |
+
+### Belagda påståenden om källan
+
+**Produktionen är nedlagd.** SCB skriver på produktsidan för namnstatistik
+att produktionen och uppdateringarna upphör helt från och med 2024, och
+hänvisar vidare till Skatteverket.
+Belägg: https://www.scb.se/be0001 — kontrollerad vid commit-datum.
+
+**Licens: CC BY.** SCB anger att statistik som tillgängliggörs som öppna
+data i statistikdatabasen har CC0, och att allt övrigt material på
+webbplatsen har Creative Commons Erkännande 4.0 Internationell.
+Filen ovan ligger under contentassets och är alltså övrigt material.
+Belägg: https://www.scb.se/om-scb/om-scb.se-och-anvandningsvillkor
+
+### Källangivelse — två skilda fall
+
+SCB anger att den som själv bearbetar statistik från deras webbplats inte
+får ange SCB som källa. Det ger två fall som inte får blandas ihop:
+
+| Vad | Källangivelse |
+|---|---|
+| Originalfilen, oförändrad, refererad som ovan | SCB **ska** anges |
+| De härledda listorna i generator/ och detektor/ | SCB får **inte** anges. De är vår bearbetning och SCB ansvarar inte för den. |
 
 ## Regel v1 — förkastad
 
@@ -198,3 +219,64 @@ ARK: Tilltalsnamn män
   kontroll 'UR'            8  BEHÅLLS
 ```
 
+
+---
+
+## Förutsagd överflaggningskälla
+
+Angivet FÖRE första skarpa körningen. Utfallet ska bekräfta eller
+falsifiera denna förutsägelse; den får inte skrivas om efteråt.
+
+Följande poster passerar regel v2, ligger i topp 1000 och är samtidigt
+vanliga ord eller ordled i svensk myndighetstext. De förutsägs bli de
+största enskilda källorna till överflaggning i lexikondetektorn.
+
+| Post | Bärare | Ark | Kollisionen |
+|---|---|---|---|
+| BO | 85 448 | Förnamn män | verbet "bo", "bostad", "bo kvar i lägenheten" |
+| EK | 8 764 | Efternamn | substantivet "ek", ortnamnsled |
+| LI | 3 529 | Förnamn kvinnor | ordled, ortnamn |
+| LO | 4 271 | Förnamn kvinnor | ordled |
+| MY | 10 664 | Förnamn kvinnor | ordled |
+| DE | 1 241 | Förnamn kvinnor | pronomenet "de" |
+| LE | 1 545 | Efternamn | franskt ordled, citat |
+
+Ingen av dessa tas bort. Överflaggning är det billiga felet och ska
+mätas, inte gömmas. En borttagning vore dessutom en mildring, och
+mildringar hör hemma hos den mänskliga granskningen, aldrig i lager 1.
+
+**Spärr:** ingen av dessa poster får förekomma i generatorns
+kollisionslista. Generatorns kollisioner härleds ur svenska ord som råkar
+vara namn, aldrig ur vad detektorns lexikon råkar innehålla.
+
+---
+
+## Namnräkning — låst beslut
+
+Ett personnamn räknas **per namndel**, aldrig som ett fullständigt namn.
+
+"Anna Lindqvist" → facitspann 1: "Anna" typ: förnamn
+facitspann 2: "Lindqvist" typ: efternamn
+
+
+Skäl: förnamn och efternamn har 37 procentenheters skillnad i
+lexikontäckning (ca 85 % mot 47,7 %). Ett sammanslaget tal döljer exakt
+den skillnad som betyder något, och redovisningsregeln kräver att varje
+typ redovisas för sig.
+
+**Följd för kvoten:** kvoten 400 namn per hög avser 400 namndelar,
+alltså omkring 200 planterade fullständiga namn. Detta anges före
+frysning.
+
+---
+
+## Efternamnstaket — förutsagd övre gräns
+
+Ett lexikon på 1000 efternamn kan i bästa fall nå 47,72 % av
+bärarmassan. Det finns ingen kompletterande detektor i version ett:
+efternamn saknar både form (som mönsterdetektorn kräver) och
+frekvenskoncentration (som lexikonet kräver). Svansen har median 4
+bärare.
+
+Taket redovisas som förutsagd övre gräns. Ingen fallback påstås,
+eftersom ingen finns.
