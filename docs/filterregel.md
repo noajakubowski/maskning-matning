@@ -255,8 +255,10 @@ vara namn, aldrig ur vad detektorns lexikon råkar innehålla.
 
 Ett personnamn räknas **per namndel**, aldrig som ett fullständigt namn.
 
-"Anna Lindqvist" → facitspann 1: "Anna" typ: förnamn
-facitspann 2: "Lindqvist" typ: efternamn
+```
+"Anna Lindqvist"  →  facitspann 1: "Anna"      typ: förnamn
+                     facitspann 2: "Lindqvist" typ: efternamn
+```
 
 
 Skäl: förnamn och efternamn har 37 procentenheters skillnad i

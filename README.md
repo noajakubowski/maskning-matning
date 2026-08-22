@@ -32,3 +32,18 @@ Ingen delad lib/. Generatorn och detektorerna delar ingen kod och inga listor.
 Namnmaterial härleds ur SCB:s namnstatistik. Bearbetningen är vår egen;
 SCB ansvarar inte för den och anges därför inte som källa till de härledda
 listorna. Detaljer i förhandsregistreringen.
+
+## Körmiljö — kända fällor
+
+Upptäckt under uppsättningen. Skrivs här för att nästa session inte ska
+behöva upptäcka dem igen.
+
+| Fälla | Gör så här i stället |
+|---|---|
+| `sha256sum` finns inte på macOS. Under `set -e` avbryter skriptet mitt i. | `shasum -a 256` |
+| `grep` är ugrep på den här maskinen. Långa teckenklassrepetitioner som `[^<>]{0,120}` över UTF-8 spräcker komplexitetsgränsen och hänger tills kommandot timar ut. | Textutvinning ur HTML och XML görs i Python, inte med `grep -oE`. |
+
+Den andra fällan är den farliga: ett hängt mönster ger tom utdata, och ett
+skript som avbryter på "tomt resultat" avbryter då av **rätt utfall men fel
+orsak**. Skript i det här repot ska skilja på "hittade inget" och
+"kommandot fungerade inte".
