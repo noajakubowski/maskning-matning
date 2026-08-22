@@ -1,0 +1,314 @@
+# Förhandsregistrering
+
+Detta dokument låser mätningens parametrar innan första skarpa körningen.
+Commit-tidsstämpeln på den här filen är beviset. Efter första körningen
+ändras inget som här kallas **fryst**.
+
+Relaterat masterdokument: [`filterregel.md`](filterregel.md) (commitade
+revisioner a3a1bd0, 30cc9ff). Där finns namnkälla med sha256 och licens,
+filterregel v1→v2 med skäl, täckningstal per ark, förutsagd
+överflaggning, namnräkning per namndel och efternamnstaket. Det som
+står där gäller och upprepas inte här.
+
+---
+
+## Vad som mäts
+
+Ett verktyg som maskar personuppgifter i myndighetsdokument, och en rigg
+som mäter hur ofta det misslyckas mot ett facit skapat i samma ögonblick.
+
+| Typ | Enhet | Kommentar |
+|---|---|---|
+| Personnummer | planterat värde | — |
+| Telefonnummer | planterat värde | — |
+| Personnamn | namndel | aldrig fullständigt namn; se [`filterregel.md`](filterregel.md) |
+
+Riggen producerar frekvenser för miss och överflaggning per typ. Den
+bedömer inte om maskningen i sig är tillräcklig för produktion.
+
+---
+
+## Korpus
+
+Tre högar. Varje hög får samma kvot oberoende av innehållstyp.
+
+| Hög | Syfte |
+|---|---|
+| 1 — ren | Kontrollgrupp utan avsiktlig skada |
+| 2 — trasig text | OCR-liknande korruption (se nästa avsnitt) |
+| 3 — namnkollisioner | Svenska ord som råkar vara registrerade namn |
+
+### Kvot per hög — fryst
+
+| Typ | Antal per hög | Grund |
+|---|---|---|
+| Namndelar | 400 | Statistisk: ±3 procentenheter vid frekvens kring 10 % (se tabell nedan) |
+| Personnummer | 200 | Statistisk: ±4,2 procentenheter vid frekvens kring 10 % |
+| Telefonnummer | 200 | Statistisk: ±4,2 procentenheter vid frekvens kring 10 % |
+
+Kvoten styr, inte dokumentantalet. Antalet dokument blir vad det blir,
+deterministiskt per frö.
+
+```
+  per hög
+  ┌─────────────────────────────────────┐
+  │ 400 namndelar                       │
+  │ 200 personnummer                    │
+  │ 200 telefonnummer                   │
+  └─────────────────────────────────────┘
+           │
+           ▼
+  antal dokument = f(frö, fördelning)   ← ej fryst som tal
+```
+
+### Motivering av kvotstorlek
+
+Antagande för storleksberäkning: sann missfrekvens kring **10 %**.
+
+| Parameter | Värde | Grund |
+|---|---|---|
+| Konfidensnivå | 95 % | Redovisningsregel (se avsnitt Redovisning) |
+| Önskad halvbredd på intervall | ±3 procentenheter | Noas beslut: tillräcklig precision utan att kräva orimlig korpus |
+| Approximativ n vid p≈0,10 | ca 400 | Binomial approx.: n ≈ z²·p·(1−p) / e² med z≈1,96, e=0,03 → n≈384 |
+
+400 namndelar per hög uppfyller det approximativa kravet (faktiskt ±2,94;
+n=384 ger exakt ±3,0). Personnummer och telefon har n=200; halvbredden
+blir ±4,2 procentenheter vid samma p — 39 % bredare än kravet — vilket
+accepteras.
+
+### Fjärde hög — struken
+
+En hög för **indirekt utpekande** (t.ex. "min dotter Anna") planerades
+men ströks före frysning. Facit går inte att ange som entydiga
+teckenpositioner för sådana uttryck utan att smuggla in tolkning i
+facitgenereringen.
+
+---
+
+## Korruption i hög 2
+
+Korruption modellerar vad en skanner gör med papper, inte vad detektorn
+gör med text.
+
+### Korruptionstyper — fryst
+
+| Typ | Andel av korruptionsfall | Grund |
+|---|---|---|
+| Teckenförväxling (0/O, 1/l, 5/S) | 50 % | Publicerade OCR-studier, engelska/tyska/arabiska texter — **inte** svenska myndighetsskanningar |
+| Borttaget eller inskjutet tecken | 30 % | Samma källa |
+| Inskjutet mellanslag | 20 % | Samma källa |
+| Avstavning över radbryt | ingår i fördelningen ovan | Samma modell |
+
+Fördelningen bygger alltså på empiriska OCR-studier från andra språk och
+domäner. Svensk myndighetsskanning har inte studerats här; generalisering
+är medveten och obekräftad.
+
+### Takt — fryst
+
+| Parameter | Värde | Grund |
+|---|---|---|
+| Andel planterade uppgifter som får minst en korruption | 30 % | **Saknad empirisk grund** — valt utan mätunderlag |
+
+---
+
+## Matchningsregel — fryst
+
+Jämförelse sker på teckenpositioner i slutlig text (efter korruption).
+
+### Träff — mäts per facitspann
+
+| Utfall | Definition |
+|---|---|
+| Full träff | Detektorns union täcker hela facitspannet |
+| Delvis | Unionen täcker någon del av facitspannet men inte hela |
+| Miss | Unionen berör inte facitspannet alls |
+
+Att en flagga sträcker sig utanför facitspannet påverkar inte
+träffbedömningen. Kostnaden för det fångas i stället av
+överflaggningsmåttet nedan.
+
+### Överflaggning — mäts i tecken, inte i flaggor
+
+Överflaggning är antalet tecken i detektorns union som inte ligger inom
+något facitspann. Redovisas som absolut antal och som antal per 1000
+tecken text. Överflaggning redovisas alltid tillsammans med missarna,
+aldrig ensam, och aldrig mot dem.
+
+Union sker per typ, inte över typer. Flaggor för personnummer slås ihop
+med varandra, aldrig med flaggor för namn. Annars går redovisning per typ
+inte att göra. Ett tecken som felaktigt flaggats räknas som
+överflaggning för den typ detektorn påstod att det var.
+
+Motivering: teckenmåttet valdes framför ett tak för hur mycket en flagga
+får överskjuta, eftersom ett tak skulle kräva ett godtyckligt tal.
+Teckenmåttet kräver inget påhittat värde.
+
+```
+Detektor som flaggar hela dokumentet:
+  träff          full träff på varje facitspann
+  överflaggning  ≈ hela dokumentets teckenantal
+  utfall         maximal träffsäkerhet, katastrofal överflaggning
+                 — båda talen syns, ingen kan dölja det andra
+```
+
+---
+
+## Facit
+
+Facit genereras tillsammans med texten, passerar aldrig detektionslagret
+(M2), och öppnas först i poängsättningen (M4).
+
+Ordning:
+
+```
+  ren text  →  plantera uppgifter  →  korruption (hög 2)  →  skriv facit
+```
+
+Facit skrivs **efter** korruption eftersom skadan flyttar teckenpositioner.
+
+---
+
+## Frön — fryst
+
+| Regel | Detalj |
+|---|---|
+| Ett frö per hög | Tre frön totalt |
+| Visning | Fröet redovisas i körresultatet |
+| Reproducerbarhet | Samma frö → identisk hög → identiskt resultat |
+| Slumpkälla | Egen seedad generator i M1; **inga** anrop till inbyggd slump |
+
+---
+
+## Personnummer — fryst krav
+
+Alla planterade personnummer konstrueras så att de **inte** kan tillhöra
+en verklig person. Detta är ett hårdkrav på M1, inte en mätparameter.
+
+---
+
+## Mätuppsättningar
+
+Tre körningar per hög (eller motsvarande matris):
+
+| Uppsättning | Innehåll |
+|---|---|
+| Mönster ensam | Endast mönsterdetektor |
+| Lexikon ensam | Endast lexikondetektor |
+| Union | Båda, resultat slås ihop före jämförelse |
+
+| Typ | Redovisningsdjup |
+|---|---|
+| Personnamn (per namndel, per ark) | Full jämförelse: full träff, delvis, miss, överflaggning |
+| Personnummer | Nedtonad: miss och överflaggning |
+| Telefonnummer | Nedtonad: miss och överflaggning |
+
+---
+
+## Separation
+
+Skilda mappar, ingen delad `lib/`. Generatorn modellerar verkligheten,
+aldrig detektorn.
+
+| Härledning | Källa |
+|---|---|
+| Korruptioner | Vad en skanner gör med papper |
+| Namnkollisioner (hög 3) | Svenska ord som råkar vara namn |
+| Detektorns lexikon | [`filterregel.md`](filterregel.md) — **inte** input till generatorn |
+
+Ingen lista i generatorn härleds ur hur M2 fungerar.
+
+### Byggspärrar — fryst
+
+Två tester fäller bygget:
+
+| Test | Vad som fångas |
+|---|---|
+| Import över modulgräns | Delad kod eller listor mellan generator och detektor |
+| Generator läser detektorns listfil vid körning | Läckage från detektor till facit |
+
+Ett tidigare planerat test mot **namnöverlapp** mellan pool och lexikon är
+**struket**. Under vald namnpool är överlapp avsiktligt — verkligheten
+innehåller Anna och Lars.
+
+---
+
+## Namnpool
+
+| | Generator | Detektor |
+|---|---|---|
+| Urval | Hela registret, viktat på bärarfrekvens | Topp 1000 per ark efter filterregel v2 |
+| Syfte | Verklighetsmodell | Hygien i matchning |
+
+Överlappet är avsiktligt och modellerar drift.
+
+Täckningstalen i [`filterregel.md`](filterregel.md) är **förhandsregistrerad
+övre gräns** för lexikondetektorn, inte ett mål för generatorn.
+
+Spärren i filterregel.md gäller: inget namn ur detektorns
+förutsagda överflaggningslista får planteras i hög 3.
+
+---
+
+## Redovisning — fryst
+
+| Regel | Detalj |
+|---|---|
+| Frekvens | Alltid med 95-procentigt konfidensintervall, aldrig punktvärde ensamt |
+| Miss och överflaggning | Alltid redovisade tillsammans |
+| Aggregering | Per typ — aldrig snitt över typer |
+| Namntyper | Förnamn och efternamn är skilda typer |
+
+Konfidensnivån 95 % följer samma antagande som kvotmotiveringen ovan.
+
+---
+
+## Vad som byggs
+
+| Modul | Innehåll | Status |
+|---|---|---|
+| M1 | Generator — syntetiska dokument och facit | Ingår |
+| M2 | Detektorer — mönster och lexikon | Ingår |
+| M3 | Minimal regelmotor — regel-id + hash | Ingår |
+| M4 | Poängsättning mot facit | Ingår — **producerar mätningssiffrorna** |
+| M5 | Batchkörning | Om tiden räcker; struken M5 påverkar inte mätningen |
+| M7 | Reducerad logg | Om tiden räcker |
+| M6, M8, M9 | — | **Utgår** i version ett |
+
+Version ett: ingen modell, ingen molndel, ingen nyckel.
+
+```
+  M1 ──► text + facit (facit stängt till M4)
+  M2 ──► flaggor
+  M3 ──► regel-id + hash
+  M4 ──► frekvenser + konfidensintervall   ← enda sifferkälla
+  M5 ──► (valfri omslag, ändrar inte M4:s utdata)
+  M7 ──► (valfri logg)
+```
+
+---
+
+## Kända begränsningar
+
+| Begränsning | Konsekvens |
+|---|---|
+| Namnregistret fryst 2022, uppdateras inte mer | Drift mot nyare namn mäts inte |
+| Ett register delat på rang (generator vs detektor) | Svagare separation än två oberoende källor |
+| Korruptionstakt 30 % utan underlag | Hög 2 kan misrepresentera verklig OCR-felfrekvens |
+| Efternamn utan fallback-detektor | Tak enligt [`filterregel.md`](filterregel.md) (efternamnstaket) |
+| OCR-fördelning från icke-svenska studier | Korruptionstyper kan skilja sig från svenska myndighetsskanningar |
+| Kortare poster i lexikon (känd förorening) | Förutsägs öka överflaggning; se filterregel.md |
+
+---
+
+## Frysta vs ofrysta parametrar
+
+| Fryst (ändras inte efter denna commit) | Ofryst (implementation, inte mätparameter) |
+|---|---|
+| Kvoter per hög och typ | Antal dokument per hög |
+| Korruptionsfördelning och takt | Exakt dokumentlängd |
+| Matchningsregel och överflaggningsdefinition | Filformat på disk |
+| Fröregler | CLI-flaggors namn |
+| Mätuppsättningar | M7-loggformat om M7 byggs |
+| Redovisningsregler | — |
+| Separations- och byggspärrar | — |
+| Krav på ogiltiga personnummer | — |
