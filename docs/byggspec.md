@@ -131,6 +131,9 @@ byggs tillsammans med M2.
 | Ordning | öppet — avgörs vid bygget |
 | Frö och korpusbeskrivning | ska visas; exakt format öppet — avgörs vid bygget |
 | Differens mellan två högar | beräknas parat; märks som parad i utskriften (Tillägg H, I) |
+| Spannunion | beräknas över samtliga flaggor i en mätuppsättning, inte per typ (Tillägg J) |
+| Träffar och missar | grupperas efter facitets typ, inte flaggans (Tillägg J) |
+| Typförväxling | räknas per riktning; redovisas i egen kolumn (Tillägg J) |
 
 ---
 
@@ -143,8 +146,11 @@ koden:
 detektorunion   flaggor från mönster och lexikon slås ihop
                 — hör till mätuppsättningen "union"
 
-spannunion      överlappande flaggor inom samma typ slås ihop
+spannunion      överlappande flaggor slås ihop till ett spann
                 innan de jämförs mot facit
 ```
 
-Spannunion sker **alltid per typ** och **aldrig** över typgränser.
+Spannunion beräknas över **samtliga** flaggor i en mätuppsättning och
+**aldrig** per typ (Tillägg J). Detektorunion och spannunion ska hållas
+isär: detektorunion slår ihop mönster och lexikon; spannunion slår ihop
+överlappande flaggspann oavsett typ.

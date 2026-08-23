@@ -923,3 +923,107 @@ Detta är en **styrka:** en parad korpus isolerar effekten av högens egen
 förhandsregistreringens formulering "Ett frö per hög | Tre frön totalt"
 beskriver inte konstruktionen, och skulle utan denna registrering kunna läsas
 som att högarna är oberoende.
+
+---
+
+## Tillägg J — träff bedöms på spann, typförväxling mäts separat — 2026-08-23
+
+Besluten nedan fattades **2026-08-23**, efter tillägget i commit 4ef58bd
+men före första skarpa körningen. De är låsta från och med detta tillägg.
+Frysningen binder inte ännu, enligt Tillägg D.
+
+### J1 — Fyndet
+
+M2 implementerades och kördes mot en testkorpus. Granskningen visade att
+mönsterdetektorn rapporterar fler personnummer och färre telefonnummer än
+vad som planterats.
+
+Orsaken är att formerna är genuint tvetydiga:
+
+```
+telefonnummer utan skiljetecken   0701234567
+tiosiffrigt personnummer          8901012384
+```
+
+Båda är tio siffror, och 07-01-23 är ett giltigt datumled enligt E3:s
+formkontroll — månad 01, dag 23. En detektor som bara läser form kan inte
+skilja dem, och ska inte kunna det. Att skilja dem kräver meningskontext,
+vilket ingen detektor i version ett har.
+
+### J2 — Varför den gamla regeln ger fel siffror
+
+Tillägg E anger att spannunion sker per typ och att träff bedöms mot
+facitspann inom samma typ. Med tvetydiga former ger det följande:
+
+```
+flagga typad som personnummer
+   ligger i personnummer-unionen
+   överlappar inget personnummerfacit   ->  ÖVERFLAGGNING
+
+telefonnummerfacitet
+   ingen telefontypad flagga täcker det ->  MISS
+
+ETT fynd bokförs som TVÅ fel
+```
+
+Det är felaktigt i sak. Verktyget svärtade tecknen. Personuppgiften är
+skyddad. Maskningen misslyckades inte — och det är misslyckad maskning
+projektet mäter.
+
+### J3 — Gällande matchningsregel
+
+Detta ersätter E:s matchningsavsnitt i de delar som anges här. Övriga delar
+av E gäller oförändrat.
+
+**Träff bedöms på spann, inte på typ.**
+
+- Full träff: detektorns union täcker hela facitspannet
+- Delvis: unionen täcker någon del men inte hela
+- Miss: unionen berör inte facitspannet alls
+
+Vilken typ detektorn angav påverkar inte träffbedömningen. Spannunion
+beräknas över **samtliga** flaggor i en mätuppsättning, inte per typ.
+
+**Typförväxling är ett eget mått.**
+
+En träff där detektorns typ inte stämmer med facitpostens typ räknas som
+typförväxling. Redovisas per riktning:
+
+```
+flaggat som personnummer, var telefonnummer
+flaggat som telefonnummer, var personnummer
+flaggat som personnamn, var annat
+```
+
+Typförväxling räknas **aldrig** som miss och **aldrig** som överflaggning.
+Den redovisas i egen kolumn, alltid tillsammans med träffarna.
+
+**Överflaggning** mäts oförändrat i tecken, men mot **samtliga** facitspann
+oavsett typ: antalet tecken i detektorns union som inte ligger inom något
+facitspann alls.
+
+**Redovisning per typ** gäller oförändrat. Träffar och missar grupperas efter
+**facitets** typ, inte efter flaggans. Facit vet vad som planterades; flaggan
+gissar.
+
+### J4 — Varför inte de andra vägarna
+
+Tre alternativ övervägdes och förkastades:
+
+**Slå ihop alla spann och sluta redovisa per typ** — bryter mot
+förhandsregistreringens krav att varje typ redovisas för sig.
+
+**Behåll dubbelbokföringen** — rapporterar en miss på ett spann där tecknen
+faktiskt flaggades, alltså ett fel som inte inträffat.
+
+**Gör mönstren ömsesidigt uteslutande med en prioritetsordning** — kräver
+ett godtyckligt val av vilken typ som vinner. Regel 3 förbjuder tal och val
+utan empirisk grund eller uttalat beslut, och här finns ingen grund att luta
+sig mot.
+
+### J5 — Vad detta kostar
+
+Typförväxling är en ny kolumn i redovisningen. Den väntas vara liten. Den
+redovisas **alltid**, aldrig sammanslagen med något annat mått, eftersom ett
+verktyg som svärtar rätt tecken av fel skäl är svagare än ett som svärtar
+rätt tecken av rätt skäl — och skillnaden ska synas.
