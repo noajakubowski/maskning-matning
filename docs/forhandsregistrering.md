@@ -1027,3 +1027,322 @@ Typförväxling är en ny kolumn i redovisningen. Den väntas vara liten. Den
 redovisas **alltid**, aldrig sammanslagen med något annat mått, eftersom ett
 verktyg som svärtar rätt tecken av fel skäl är svagare än ett som svärtar
 rätt tecken av rätt skäl — och skillnaden ska synas.
+
+---
+
+## Tillägg K — sista kontraktet före M4 — 2026-08-23
+
+Detta är det sista avsnittet som skrivs före första skarpa körningen.
+Enligt Tillägg D binder frysningen när ett M4-resultat på redovisat frö
+commitas. Tre luckor som M4 annars hade fyllt under kodning stängs här,
+eftersom ett val som görs efter att siffrorna finns inte längre är en
+förhandsregistrering.
+
+Besluten nedan fattades **2026-08-23**, efter tillägget i commit b05a503.
+
+### K1 — Typförväxling redovisas fullt ut
+
+Grunddokumentets avsnitt om mätuppsättningar anger att personnummer och
+telefonnummer redovisas nedtonat: bara miss och överflaggning, medan full
+jämförelse ges för personnamn.
+
+Tillägg J införde typförväxling, ett mått som endast uppstår mellan
+personnummer och telefonnummer. Redovisas det inte för dessa typer
+redovisas det ingenstans.
+
+**Gällande**
+
+Nedtoningen avser **jämförelsen mellan de tre mätuppsättningarna** — mönster
+ensam, lexikon ensam, union. För personnummer och telefonnummer är den
+jämförelsen innehållslös, eftersom lexikonet aldrig matchar siffror.
+
+Typförväxling är ett annat mått och redovisas fullt ut för alla typer där
+den kan uppstå.
+
+Motsägelsen fanns därför att typförväxling inte var känt när grunddokumentet
+skrevs, och att nedtoningen och typförväxlingen råkade omfattas av samma
+mening.
+
+### K2 — Parad metod för differens mellan högar
+
+Tillägg H3 och I3 anger att differensen mellan två högar ska beräknas parat,
+men inte med vilken metod. Utan angiven metod görs valet under kodning, efter
+att datan finns — vilket är precis det förhandsregistreringen finns till för
+att förhindra.
+
+**Gällande**
+
+McNemars test för parade proportioner, med Wilsons metod för intervallet kring
+den parade differensen. Nivå 95 procent, som för övriga intervall.
+
+Parat är nödvändigt eftersom samma facitpost förekommer i båda högar och bara
+där de skiljer sig åt bär information om effekten:
+
+```
+samma facitpost, två högar
+
+hittad i båda                     bär ingen information
+missad i båda                     bär ingen information
+hittad i hög A, missad i hög B    bär effekten
+missad i hög A, hittad i hög B    bär effekten
+```
+
+Endast de två sista cellerna bidrar. En metod som behandlar högarna som
+oberoende stickprov ignorerar parningen, får ett onödigt brett intervall och
+underskattar mätningens precision.
+
+Metoden gäller **varje par av högar**, inte bara hög 1 mot hög 2, eftersom
+I3 fastställde att alla tre högarna är parvis parade.
+
+**PARNINGSNYCKEL:** en facitpost identifieras av dokument-id tillsammans med
+startposition. Parningen mellan två högar sker på denna nyckel. Poster som
+saknar motsvarighet i den andra högen utesluts ur den parade jämförelsen och
+redovisas som antal uteslutna.
+
+### K3 — Överflaggningens nämnare
+
+Grunddokumentet anger att överflaggning redovisas per 1000 tecken text, men
+inte vilka tecken som räknas.
+
+**Gällande**
+
+Nämnaren är högens **totala teckenantal**, summerat över samtliga dokument i
+högen, räknat som teckenindex i NFC-normaliserad text enligt E7.
+
+Följande variant förkastades:
+
+```
+A  alla tecken i högen
+B  bara dokument som fick minst en flagga
+```
+
+Med B får en detektor som flaggar färre dokument en mindre nämnare, och samma
+antal felflaggade tecken ger då ett bättre värde. Sämre arbete skulle se bättre
+ut. Måttet skulle bära ett inbyggt felaktigt incitament.
+
+A är oberoende av vad detektorn gör och därför jämförbart mellan detektorer,
+mellan mätuppsättningar och mellan högar.
+
+### K4 — E:s matchningsavsnitt är upphävt av J
+
+Ingen åtgärd, men registreras här så att en läsare inte vilseleds.
+
+Grunddokumentets matchningsavsnitt anger fortfarande att union sker per typ och
+att ett felaktigt flaggat tecken räknas som överflaggning för den typ detektorn
+påstod. Tillägg J upphävde båda. Avsnittet står kvar oförändrat eftersom
+dokumentet är append-only.
+
+**Gällande regel:** vid konflikt gäller `docs/gallande-varden.md`. M4 ska byggas
+mot den filen, inte mot grunddokumentets matchningsavsnitt.
+
+---
+
+## Tillägg L — rättelser efter extern statistisk granskning — 2026-08-23
+
+En oberoende statistisk granskning gjordes före första skarpa körningen. Fyra av
+fem granskade metodval höll inte. Detta avsnitt rättar dem. Tillägg K står kvar
+oförändrat enligt append-only; vid konflikt gäller det som står här och i
+`docs/gallande-varden.md`.
+
+Besluten nedan fattades **2026-08-23**.
+
+### L1 — PARNINGSNYCKEL: plant_id
+
+K2 anger dokument-id plus startposition. Det fungerar inte. Startposition är ett
+**utfall** av behandlingen, inte en identitet: korruptionen skjuter in och tar
+bort tecken, och allt efter första längdändringen förskjuts.
+
+**Uppmätt**
+
+```
+dokument-id + startposition      731 av 1000 parade
+dokument-id + ordningsnummer    1000 av 1000 parade
+```
+
+Bortfallet är systematiskt i två lager: skadade poster vars start flyttas, och
+oskadade poster nedströms om en tidigare längdändring i samma dokument. Kvar blir
+tidiga poster, dokument utan längdändring, och ren teckenförväxling inuti
+spannet. Insert och delete underrepresenteras, differensen trycks mot noll, och
+mätningen skulle avse den delmängd vars position överlevde skadan — inte
+OCR-effekten.
+
+**Gällande**
+
+Varje planterad uppgift får ett **plant_id**, tilldelat av generatorn **före**
+högbehandling. Parningen sker på plant_id. Teckenposition, spann och ytform
+ingår inte i nyckeln. Ytform duger inte: korruptionen ändrar just de strängar
+som skulle paras.
+
+**Uteslutningsregeln i K2 stryks**
+
+Ett saknat plant_id är ett generatorfel och ska stoppa körningen med felkod, inte
+producera en rad "n uteslutna" som ser ut som saknade data. Det är inte saknade
+data.
+
+### L2 — Metod för parad differens
+
+K2 anger Wilsons metod för intervallet kring den parade differensen. Det
+betecknar ingen procedur: Wilson är definierat för **en** binomial andel. En
+implementatör kan göra minst tre olika saker och ingen av dem ger differensen.
+
+**Gällande**
+
+```
+Parameter:  δ = π_miss,hög B − π_miss,hög A
+Skattning:  δ̂ = (n01 − n10) / n
+Intervall:  95 % Tango score-intervall för parade proportioner (Tango 1998)
+```
+
+Inte Wilson på δ̂. Inte Wilson på n01/(n01+n10). Inte differensen mellan två
+Wilson-intervall.
+
+Utskriften ska **alltid** visa n01, n10 och n01+n10, så att läsaren kan räkna om
+själv.
+
+### L3 — Konkordanta par ingår i nämnaren
+
+K2:s tabell säger att endast de diskordanta cellerna bär information. Det gäller
+teststatistikan, inte differensen.
+
+```
+differens        (n01 − n10) / n     n = alla fyra celler
+teststatistika   bara n01 och n10
+```
+
+**Gällande**
+
+Nämnaren n omfattar samtliga parade poster, konkordanta såväl som diskordanta.
+
+### L4 — Inget hypotestest i redovisningen
+
+K2 införde McNemars test. Redovisningsavsnittet är fryst och kräver frekvenser
+med konfidensintervall, aldrig punktvärden ensamma, och nämner inga hypotestest.
+Med tre par av högar gånger tre mätuppsättningar gånger flera typer skulle ett
+stort antal p-värden uppstå och multiplicitetsfrågan behöva besvaras utan att
+något krav finns.
+
+**Gällande**
+
+Inget p-värde beräknas eller skrivs ut. Den parade differensen redovisas som
+punktskattning med Tango-intervall enligt L2. Utesluter intervallet noll är
+skillnaden säkerställd på 95-procentsnivån. De diskordanta antalen redovisas
+enligt L2.
+
+### L5 — Delvis träff räknas som miss
+
+Den parade analysen jämför miss mot icke-miss och är därmed binär, men utfallet
+är trevärt. OCR-skada är precis det som producerar delvisa träffar — halva
+uppgiften hittas.
+
+**Gällande**
+
+I varje binär beräkning räknas delvis träff som **MISS**. Full träff är den
+enda icke-missen.
+
+**Skäl**
+
+Projektet mäter maskning, inte detektion. Ett halvt svärtat personnummer är
+fortfarande ett födelsedatum på en utlämnad handling. Att räkna delvis som träff
+mäter om detektorn upptäckte något; att räkna den som miss mäter om personen är
+skyddad.
+
+Delvis redovisas **alltid** som egen kolumn, aldrig dold inne i missarna, så att
+skillnaden mellan "hittade ingenting" och "hittade halva" syns och läsaren kan
+räkna om.
+
+### L6 — Överflaggningens osäkerhet
+
+K3 anger punktvärde utan intervall, med skälet att det är ett kvotmått och inte
+en andel av oberoende försök. Premissen håller: Wilson på tecken vore ogiltigt.
+Slutsatsen håller inte. Korpusen är ett stickprov ur en generator, hög 3 är
+byggd just för detta mått, och den frysta regeln säger att frekvenser aldrig står
+ensamma.
+
+**Gällande**
+
+```
+Försöksenhet: dokument. Mätenhet: tecken. Händelse: flagga.
+```
+
+Överflaggade tecken per 1000 redovisas med 95-procentigt percentilintervall från
+klusterbootstrap på dokument, kvotestimator, B = 10 000 upprepningar.
+
+Antalet överflaggade **spann** redovisas alltid tillsammans med teckenmåttet.
+
+Wilson används **inte** på kvoten.
+
+**Skäl**
+
+En felflaggning av ett efternamn är en händelse och nio beroende tecken.
+Precisionen styrs av antalet händelser och dokument, inte av korpusens längd. Ett
+punktvärde med tre decimaler över två miljoner tecken och ett tiotal falska
+flaggor är kosmetik.
+
+### L7 — Kvotmotiveringens precision gäller en enhet som inte får redovisas
+
+Kvoten 400 namndelar motiverades med ±2,94 procentenheter vid p = 0,10, och 200
+med ±4,16, båda ur normalapproximationen.
+
+Två fel.
+
+**Fel 1 — enheten**
+
+Redovisningsregeln är fryst: per typ, aldrig snitt över typer, och förnamn och
+efternamn är skilda typer. Det som får redovisas är alltså per ark, där n är
+omkring 100 och i ett fall 43 — inte 400.
+
+```
+n = 400   ±3,0 pe    kvotens motivering
+n = 104   ±5,7 pe    ett vanligt ark
+n =  43   ±9,0 pe    minsta arket
+```
+
+Fördelningen över de fem arken är ojämn och ostyrd. Det är en följd av att namn
+dras bärarviktat, vilket är verklighetsmodellen. Den rättas inte.
+
+**Fel 2 — metoden**
+
+Wilson valdes för att normalapproximationen fallerar nära noll. Dimensioneringen
+gjordes ändå med normalapproximationen vid p = 0,10, en punkt vi inte tror på
+vare sig för namn eller för mönsterdetektorn.
+
+Wilson vid 0 av 200 ger [0,00 %; 1,88 %], inte ±4,16. Wilson vid 87 av 400 ger
+[18,0 %; 26,1 %], inte ±2,94.
+
+**Gällande**
+
+Kvoterna ändras inte. De är låsta och koden är byggd mot dem. Talen ±2,94 och
+±4,16 får **inte** citeras som den precision resultaten har. Varje redovisad siffra
+bär sitt eget Wilson-intervall, och det är den precision som gäller.
+
+### L8 — Hög 1:s namnmätning är implementationsverifiering
+
+Lexikonträff är deterministisk givet strängen: ett namn i topp 1000 träffas
+alltid, ett utanför missas alltid. All osäkerhet ligger i vilka namn som dras.
+
+Storheten som mäts i hög 1 — andelen bärarviktade dragningar som ligger i topp
+1000 — är därmed exakt beräkningsbar ur registret utan att riggen körs. Den står
+redan i `filterregel.md`.
+
+**Gällande**
+
+Hög 1:s namnmätning redovisas som **verifiering** av att kedjan generator,
+detektor och poängsättning fungerar, inte som ett empiriskt fynd. Avvikelse mellan
+uppmätt och beräknat värde utöver intervallet indikerar ett fel i
+implementationen.
+
+De empiriska fynden ligger i hög 2 och hög 3, där korruption och kollisioner
+tillför något registret inte kan svara på.
+
+### L9 — Hänvisning till Tillägg D
+
+Tilläggen går A och B, sedan C, E, F, G, H, I, J, K. Något Tillägg D skrevs
+aldrig — bokstaven hoppades över när A och B hamnade i ett obetitlat avsnitt.
+
+Tillägg J och Tillägg K hänvisar båda till Tillägg D i frågan om när frysningen
+binder. Sakinnehållet i hänvisningarna är korrekt, men regeln är satt i Tillägg E.
+
+**Gällande**
+
+Hänvisningar till Tillägg D avser Tillägg E. Raderna i J och K rättas inte,
+eftersom de är frysta.

@@ -13,6 +13,7 @@ Per planterad uppgift:
 
 | Fält | Innehåll |
 |---|---|
+| plant_id | Stabil identifierare för planterad uppgift; tilldelas före högbehandling (Tillägg L) |
 | dokument-id | Identifierare inom högen |
 | typ | personnummer, telefonnummer, personnamn |
 | undertyp eller ark | längdform, skrivform, eller filterregel-ark |
@@ -127,13 +128,24 @@ byggs tillsammans med M2.
 
 | Parameter | Status |
 |---|---|
-| Terminalutskrift — innehåll | öppet — avgörs vid bygget |
+| Regelkälla | `docs/gallande-varden.md`, inte grunddokumentets matchningsavsnitt (Tillägg K, L) |
+| Terminalutskrift — innehåll | frö, högtyp, antal dokument, antal facitposter; per typ: full träff, delvis, miss, typförväxling per riktning, överflaggning absolut och per 1000 tecken med percentilintervall; Wilson-intervall där det är en proportion (Tillägg K, L) |
 | Ordning | öppet — avgörs vid bygget |
-| Frö och korpusbeskrivning | ska visas; exakt format öppet — avgörs vid bygget |
-| Differens mellan två högar | beräknas parat; märks som parad i utskriften (Tillägg H, I) |
+| Differens mellan två högar | Tango score-intervall, 95 %, för varje par av högar; märks som parad i utskriften (Tillägg H, I, L) |
+| Parningsnyckel | plant_id; saknat plant_id stoppar körningen med felkod (Tillägg L) |
+| Parad differens — utskrift | n01, n10 och n01+n10 skrivs alltid ut (Tillägg L) |
+| Hypotestest | inget p-värde beräknas (Tillägg L) |
+| Delvis träff | räknas som miss i binära beräkningar; redovisas i egen kolumn (Tillägg L) |
 | Spannunion | beräknas över samtliga flaggor i en mätuppsättning, inte per typ (Tillägg J) |
 | Träffar och missar | grupperas efter facitets typ, inte flaggans (Tillägg J) |
-| Typförväxling | räknas per riktning; redovisas i egen kolumn (Tillägg J) |
+| Typförväxling | räknas per riktning; redovisas i egen kolumn; fullt ut för alla typer där den kan uppstå (Tillägg J, K) |
+| Överflaggningens nämnare | högens totala teckenantal (Tillägg K) |
+| Överflaggningens osäkerhet | klusterbootstrap på dokument, B = 10 000, percentilintervall; antal spann redovisas (Tillägg L) |
+| Hög 1, namn | märks som implementationsverifiering (Tillägg L) |
+
+**M1 före M4:** generatorn måste tilldela `plant_id` i facit. Det kräver en
+ändring i generatorn och i facitets fältuppsättning, som byggs i egen omgång före
+M4.
 
 ---
 

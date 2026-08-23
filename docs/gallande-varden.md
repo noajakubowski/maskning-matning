@@ -18,7 +18,7 @@ här, med hänvisning till tillägget.
 | Lexikonmatchning | hela ord, skiftlägesokänsligt | Tillägg E | ospecificerat tidigare |
 | Korruptionstakt | 30 % samlat, högst en skada per uppgift | Tillägg E förtydligar 1f30aee | (inget) |
 | Konfidensintervall | Wilson, 95 % | Tillägg E | ospecificerat tidigare |
-| Överflaggning per 1000 tecken | punktvärde utan CI | Tillägg E | (inget) |
+| Överflaggning per 1000 tecken | percentilintervall från klusterbootstrap på dokument, B = 10 000 | Tillägg L | punktvärde utan CI (Tillägg E) |
 | Teckenkodning | UTF-8, NFC, LF | Tillägg E | ospecificerat tidigare |
 | Kollisionsspärr | kopieringsförbud, inte överlappsförbud | Tillägg E | spärren i filterregel.md |
 | Frysningen binder | vid commit av första M4-resultat på redovisat frö | Tillägg E | tabellhuvudets formulering rad 305 |
@@ -33,8 +33,18 @@ här, med hänvisning till tillägget.
 | Flaggans struktur | bär aldrig undertyp för personnummer och telefon | byggspec, M2-avsnittet | ospecificerat tidigare |
 | Träff | bedöms på spann, oavsett flaggans typ | Tillägg J | träff per typ i Tillägg E |
 | Spannunion | över samtliga flaggor i en mätuppsättning | Tillägg J | union per typ i Tillägg E |
-| Typförväxling | eget mått, redovisas per riktning, aldrig som miss eller överflaggning | Tillägg J | ospecificerat tidigare |
+| Typförväxling | eget mått, redovisas per riktning, aldrig som miss eller överflaggning; redovisas fullt ut för alla typer där den kan uppstå; nedtoningen avser bara jämförelsen mellan de tre mätuppsättningarna | Tillägg J och K | ospecificerat tidigare |
 | Överflaggning | tecken utanför samtliga facitspann oavsett typ | Tillägg J | per typ i Tillägg E |
+| Överflaggningens nämnare | högens totala teckenantal | Tillägg K | ospecificerat tidigare |
+| Parningsnyckel | plant_id, satt av generatorn före högbehandling | Tillägg L | dokument-id och startposition i K |
+| Saknat plant_id | stoppar körningen med felkod | Tillägg L | uteslutningsregeln i K |
+| Parad differens | Tango score-intervall, 95 %, δ = (n01−n10)/n | Tillägg L | McNemar med Wilson i K |
+| Hypotestest | ingår inte; n01, n10 och n01+n10 redovisas | Tillägg L | McNemar i K |
+| Delvis träff | räknas som miss i binära beräkningar, redovisas alltid som egen kolumn | Tillägg L | ospecificerat tidigare |
+| Överflaggningens osäkerhet | klusterbootstrap på dokument, B = 10 000, percentilintervall; antal spann redovisas | Tillägg L | punktvärde utan intervall i K |
+| Kvotmotiveringens precision | talen i kvotmotiveringen avser ett aggregat som inte får redovisas; varje redovisad siffra bär sitt eget Wilson-intervall | Tillägg L | normalapproximationen i grunddokumentet |
+| Hög 1, namn | implementationsverifiering, inte empiri | Tillägg L | ospecificerat tidigare |
+| Tillägg D | existerar inte; hänvisningar avser Tillägg E | Tillägg L | ospecificerat tidigare |
 
 ## När frysningen binder
 
@@ -54,3 +64,10 @@ Tillägg C:s kvothöjning skedde före bindningen och var därför tillåten.
 ---
 
 Filen uppdateras i samma commit som varje nytt tillägg som ändrar ett värde.
+
+Ett ämne har exakt en rad. När ett tillägg ändrar ett värde **ändras** raden — en ny
+rad läggs aldrig till vid sidan av den gamla. Det gamla värdet bevaras i kolumnen
+Ersätter, inte som en egen rad.
+
+Filen är repots konfliktlösare. Två rader för samma ämne gör den oanvändbar för
+sitt enda syfte.
