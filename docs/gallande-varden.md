@@ -29,6 +29,8 @@ här, med hänvisning till tillägget.
 | Skiftläge vid plantering | inledande versal per segment | Tillägg H | ospecificerat tidigare |
 | Parad jämförelse mellan högar | alla tre högarna parvis parade | Tillägg I | hög 1 mot hög 2 i Tillägg H |
 | Mallplatser | lämnas aldrig tomma; mall väljs bara när kvot finns kvar för varje typ den har platshållare för | Tillägg I | ospecificerat tidigare |
+| Undertyp för telefonnummer | med skiljetecken, utan skiljetecken, internationellt | kontraktsrättelse före M2 | understrecksformerna |
+| Flaggans struktur | bär aldrig undertyp för personnummer och telefon | byggspec, M2-avsnittet | ospecificerat tidigare |
 
 ## När frysningen binder
 

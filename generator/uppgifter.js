@@ -63,15 +63,15 @@ function personnummer(slump, langdform, medBindestreck) {
   return siffror;
 }
 
-const TELEFON_FORMER = ['med_skiljetecken', 'utan_skiljetecken', 'internationellt'];
+const TELEFON_FORMER = ['med skiljetecken', 'utan skiljetecken', 'internationellt'];
 
 function telefonnummer(slump, form) {
   const a = String(slump.heltal(0, 9));
   const b = String(slump.heltal(100, 999)).padStart(3, '0');
   const c = String(slump.heltal(10, 99)).padStart(2, '0');
   const d = String(slump.heltal(10, 99)).padStart(2, '0');
-  if (form === 'med_skiljetecken') return `07${a}-${b} ${c} ${d}`;
-  if (form === 'utan_skiljetecken') return `07${a}${b}${c}${d}`;
+  if (form === 'med skiljetecken') return `07${a}-${b} ${c} ${d}`;
+  if (form === 'utan skiljetecken') return `07${a}${b}${c}${d}`;
   if (form === 'internationellt') return `+467${a}${b}${c}${d}`;
   throw new Error(`Okänd telefonform: ${form}`);
 }

@@ -58,6 +58,60 @@ per frö** och redovisas i utskriften.
 
 ---
 
+## M2 — detektorns utdata
+
+### Flaggan struktur
+
+En flagga är ett påstående om att ett teckenspann innehåller en
+personuppgift. Den bär:
+
+| Fält | Innehåll |
+|---|---|
+| dokument-id | Identifierare inom högen |
+| startposition | teckenindex, inklusive |
+| slutposition | teckenindex, exklusive |
+| typ | personnummer, telefonnummer, personnamn |
+| detektor | monster, lexikon |
+| ark | endast för lexikonträffar: vilket ark i lexikon.json som matchade, angivet med strängen ur arknamn |
+
+En flagga bär **aldrig undertyp** för personnummer och telefonnummer.
+Detektorn vet inte om det den hittade är tio- eller tolvsiffrigt, eller vilken
+skrivform ett telefonnummer har — den har bara matchat en form. Låter man
+detektorn ange undertyp bygger man in kunskap den inte kan ha. M4 avgör
+undertypen genom att jämföra flaggan mot facit.
+
+För personnamn är ark däremot legitimt: det är detektorns egen lexikonstruktur,
+inte information om vad som planterades.
+
+### Var flaggorna skrivs
+
+En fil per hög och mätuppsättning, parallellt med facit.json i högens katalog:
+
+```
+flaggor-monster.json
+flaggor-lexikon.json
+```
+
+Unionsuppsättningen beräknas av M4 ur de två och skrivs **inte** av M2 —
+annars finns samma information på två ställen och kan glida isär.
+
+Toppnivån speglar facit: seed, hogtyp, meta med antal flaggor, och en lista
+flaggor.
+
+### M2 läser aldrig facit
+
+Projektets viktigaste spärr. M2 får läsa högens textfiler och
+detektor/namn/lexikon.json — ingenting annat i högens katalog.
+
+Spärren ska finnas som ett test som fäller bygget. Den kontrolleras
+strukturellt med verktyg/granska-kod.js, inte med textsökning.
+
+Den befintliga spärren i test/m1.test.js testar bara riktningen
+generator → detektor. Den omvända riktningen, detektor → facit, saknas och
+byggs tillsammans med M2.
+
+---
+
 ## M3 — minimal regelmotor
 
 | Parameter | Status |

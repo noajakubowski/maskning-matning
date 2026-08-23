@@ -59,7 +59,7 @@ function main() {
   );
   fs.writeFileSync(
     path.join(namnDirDet, 'lexikon.json'),
-    JSON.stringify({ arkfacit: ARK_FACIT, arken: lexikon }, null, 2) + '\n',
+    JSON.stringify({ arknamn: ARK_FACIT, arken: lexikon }, null, 2) + '\n',
     'utf8',
   );
 }
