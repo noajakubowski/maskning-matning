@@ -24,7 +24,11 @@ här, med hänvisning till tillägget.
 | Frysningen binder | vid commit av första M4-resultat på redovisat frö | Tillägg E | tabellhuvudets formulering rad 305 |
 | Redovisning | per typ och längdform, aldrig sammanslaget | Tillägg C och E | "per typ" i grunddokumentet |
 | Hög 3, namnkvotens fördelning | 200 kollisionsord, 200 vanliga namn | Tillägg F | ospecificerat tidigare |
-| Kollisionslista | 26 ord, `generator/kollisionslista.md` | Tillägg F | ospecificerat tidigare |
+| Kollisionslista | 32 ord, `generator/kollisionslista.md` | Tillägg G | 26 ord i Tillägg F |
+| Årsled tolvsiffriga personnummer | 1900 till innevarande år | Tillägg I | 19xx eller 20xx jämnt fördelat i Tillägg H |
+| Skiftläge vid plantering | inledande versal per segment | Tillägg H | ospecificerat tidigare |
+| Parad jämförelse mellan högar | alla tre högarna parvis parade | Tillägg I | hög 1 mot hög 2 i Tillägg H |
+| Mallplatser | lämnas aldrig tomma; mall väljs bara när kvot finns kvar för varje typ den har platshållare för | Tillägg I | ospecificerat tidigare |
 
 ## När frysningen binder
 

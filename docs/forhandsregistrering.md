@@ -764,3 +764,162 @@ oberoende granskning före byggstart.
 
 Repetitionen i F4 uppdateras: omkring **sex** användningar per ord i
 stället för åtta.
+
+---
+
+## Tillägg H — fynd vid granskning av M1:s utfall — 2026-08-23
+
+Besluten nedan fattades **2026-08-23**, efter tillägget i commit d5199f9
+men före första skarpa körningen. De är låsta från och med detta tillägg.
+
+M1 implementerades och kördes på ett testfrö. Utfallet granskades oberoende
+innan koden commitades. Granskningen hittade tre saker som inte stod i
+specen. Två rättades i kod, alla tre registreras här.
+
+### H1 — Årsled i tolvsiffriga personnummer
+
+Specen angav inte vilket intervall årsledet skulle dras ur. Implementationen
+valde 1900–1999 och flaggade valet.
+
+**Gällande:** årsledet är 19xx eller 20xx, jämnt fördelat. Månad 01–12,
+dag 01–31, ingen kalenderkontroll, oförändrat.
+
+**Skäl:** ett intervall begränsat till 1900-talet modellerar ingenting.
+Personer födda efter år 2000 förekommer i myndighetsdokument, och den
+styrande regeln säger att generatorn modellerar verkligheten, aldrig
+detektorn.
+
+Detta är **inte** samma sak som tolvsiffriga nummer i Tillägg C, där
+detektorn letade efter en form som saknades. Detektorn kontrollerar årsledet
+som form. Begränsningen till 1900-talet hade bara blivit en blind fläck om
+M2 begränsar århundradet — vilket är en rimlig formkontroll och därför värd
+att kunna mäta.
+
+**Grund för jämn fördelning:** Noas beslut. Ingen mätning finns av hur
+födelseår fördelar sig bland personer i svenska myndighetsdokument. Lika
+fördelning valdes för att båda århundradena ska planteras, inte för att
+spegla en frekvens.
+
+**Redovisning:** århundradet redovisas som skrivvariant enligt E2 —
+beskrivande, utan konfidensintervall.
+
+### H2 — Skiftläge vid plantering av namn
+
+Den första implementationen planterade namn som versaler, eftersom
+SCB-registret lagrar dem så.
+
+**Gällande:** namndelar planteras med inledande versal per segment, som i
+verklig myndighetstext. Bindestreck och mellanslag är segmentgränser.
+
+**Skäl:** versalformen bröt mot Beslut B:s styrande regel att texten ska
+modellera myndighetsdokument. Allvarligare var effekten på hög 3: namnet
+planterades som BERG och det vanliga ordet som berg, vilket gjorde
+kollisionen skiftlägesseparerad och därmed trivial. Hög 3 hade mätt en
+enklare uppgift än den utger sig för.
+
+Ingen detektor i version ett utnyttjar skiftläget — E4 gör lexikonmatchningen
+skiftlägesokänslig. Att uppgiften ändå var förenklad är ett fel i korpusen,
+inte i detektorn, och rättades därför i generatorn.
+
+### H3 — Hög 1 och hög 2 delar grundtext
+
+Granskningen visade att hög 2 är hög 1 med skada pålagd: samma dokument,
+samma planterade uppgifter, endast de korrumperade tecknen skiljer. Hög 3
+har en helt egen korpus.
+
+Detta registreras som en egenskap, inte ett fel. En parad korpus isolerar
+korruptionens effekt bättre än två oberoende korpusar, eftersom skillnaden
+mellan högarna inte innehåller brus från att dokumenten skiljer sig åt.
+
+**Konsekvens för statistiken**
+
+Wilsons metod gäller oförändrat för varje hög för sig. Skillnaden mellan
+hög 1 och hög 2 är däremot ett **parat** mått och får inte behandlas som en
+skillnad mellan oberoende stickprov. Ett konfidensintervall för den
+differensen ska beräknas med en parad metod. Behandlad som oberoende blir
+intervallet för brett och underskattar mätningens precision.
+
+M4 ska redovisa differensen hög 1 mot hög 2 parat, och ange i utskriften
+att den är parad.
+
+### H4 — Textens syntetiska karaktär
+
+Granskningen visade att samma meningsmall återkommer direkt efter sig själv
+och att varje mening utgör ett eget stycke. Resultatet liknar mer en lista
+av meningar än ett dokument.
+
+Begränsningen står redan i Beslut B och F4, men F4:s formulering
+underdriver. Ingen åtgärd vidtas: varken mönster- eller lexikondetektorn
+använder meningskontext i version ett, så det påverkar inte mätningen. Det
+skulle spela roll om en modell tillkom senare.
+
+---
+
+## Tillägg I — rättelser efter andra granskningen av M1 — 2026-08-23
+
+Besluten nedan fattades **2026-08-23**, efter tillägget i commit d5199f9
+men före första skarpa körningen. De är låsta från och med detta tillägg.
+
+En andra oberoende granskning av M1:s utfall hittade tre saker. Två
+rättades i kod, den tredje ändrar hur H3 ska läsas.
+
+### I1 — Mallplatser lämnas aldrig tomma
+
+Den första implementationen kunde välja en mall med platshållare för flera
+uppgiftstyper även när kvoten för en av dem redan var förbrukad. Då lämnades
+platsen tom — till exempel `telefon , personnummer 199001232909` eller
+`telefon 0799918065, personnummer .`
+
+**Gällande:** en mall får bara väljas om varje uppgiftstyp den har en
+platshållare för fortfarande har kvot kvar. Mallar utan platshållare används
+som utfyllnad när alla kvoter är förbrukade. Ingen mallplats får lämnas tom i
+den slutliga texten.
+
+**Skäl och mätning:** en tom mallplats producerar text ingen myndighet
+skriver. Överflaggning på den texten hade mätt en bugg i generatorn i stället
+för en egenskap hos detektorn.
+
+### I2 — Födelseår i förfluten tid
+
+Den första implementationen efter H1 drog årsledet som 19 eller 20 plus två
+fria siffror, vilket gav årtal upp till 2099. 36 % av den tolvsiffriga
+korpusen beskrev personer som inte är födda.
+
+**Gällande:** årsledet i tolvsiffriga personnummer dras ur intervallet 1900
+till innevarande år. Månad 01–12, dag 01–31, ingen kalenderkontroll,
+oförändrat. Innevarande år läses ur systemklockan vid körning.
+
+Detta ersätter H1:s formulering om jämn fördelning mellan 19xx och 20xx.
+H1 står kvar oförändrat i sitt avsnitt och rättas här, i enlighet med
+append-only-regeln.
+
+**Skäl:** ofarligheten garanteras redan av den felaktiga kontrollsiffran
+enligt Beslut A. Framtida årtal var ett andra, oregistrerat sätt att uppnå
+samma sak och bröt mot den styrande regeln att generatorn modellerar
+verkligheten.
+
+**Fördelning:** båda århundradena planteras, men inte i lika antal —
+1900-talet omfattar fler år. Det var alltid beslutets innebörd: att båda
+former ska förekomma, inte att de ska vara lika många.
+
+### I3 — Alla tre högarna är parade
+
+H3 registrerade att hög 1 och hög 2 delar grundtext. Granskningen visar att
+det gäller alla tre högarna: samtliga genereras ur samma ström för ett givet
+frö och avviker först där högens egen ändring slår till.
+
+```
+hög 1 mot hög 2   identiska i de dokument som inte fick skada
+hög 1 mot hög 3   identiska i de dokument som inte fick kollisionsord
+```
+
+**Gällande:** varje jämförelse mellan två högar är parad. Wilsons metod
+gäller oförändrat för varje hög för sig. Differensen mellan två högar
+beräknas parat och märks som parad i M4:s utskrift — inte bara för paret
+1–2.
+
+Detta är en **styrka:** en parad korpus isolerar effekten av högens egen
+ändring utan brus från att dokumenten skiljer sig åt. Men
+förhandsregistreringens formulering "Ett frö per hög | Tre frön totalt"
+beskriver inte konstruktionen, och skulle utan denna registrering kunna läsas
+som att högarna är oberoende.

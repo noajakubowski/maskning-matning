@@ -76,6 +76,7 @@ per frö** och redovisas i utskriften.
 | Terminalutskrift — innehåll | öppet — avgörs vid bygget |
 | Ordning | öppet — avgörs vid bygget |
 | Frö och korpusbeskrivning | ska visas; exakt format öppet — avgörs vid bygget |
+| Differens mellan två högar | beräknas parat; märks som parad i utskriften (Tillägg H, I) |
 
 ---
 
