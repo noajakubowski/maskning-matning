@@ -43,7 +43,8 @@ här, med hänvisning till tillägget.
 | Delvis träff | räknas som miss i binära beräkningar, redovisas alltid som egen kolumn | Tillägg L | ospecificerat tidigare |
 | Överflaggningens osäkerhet | klusterbootstrap på dokument, B = 10 000, percentilintervall; antal spann redovisas | Tillägg L | punktvärde utan intervall i K |
 | Kvotmotiveringens precision | talen i kvotmotiveringen avser ett aggregat som inte får redovisas; varje redovisad siffra bär sitt eget Wilson-intervall | Tillägg L | normalapproximationen i grunddokumentet |
-| Hög 1, namn | implementationsverifiering, inte empiri | Tillägg L | ospecificerat tidigare |
+| Hög 1, namn | implementationsverifiering, inte empiri; jämförelsen omfattar endast namndelar utan bindestreck, antalet uteslutna redovisas | Tillägg L och M | ospecificerat tidigare |
+| plant_id | tilldelas vid plantering, före all högbehandling | Tillägg L | ospecificerat tidigare |
 | Tillägg D | existerar inte; hänvisningar avser Tillägg E | Tillägg L | ospecificerat tidigare |
 
 ## När frysningen binder

@@ -143,13 +143,14 @@ function planteraSekundar(nyckel, slump, namnpool, kvotKvar, aterstaende) {
   throw new Error(`Okänd sekundär platshållare: ${nyckel}`);
 }
 
-function laggTillMening(text, mall, varden, paFacit) {
+function laggTillMening(text, mall, varden, paFacit, plantIdRef) {
   const bas = [...text].length;
   const spans = [];
   const mening = fyllMall(mall, varden, (nyckel, start, end, varde) => {
     const meta = paFacit ? paFacit(nyckel, varde) : null;
     if (meta) {
       spans.push({
+        plant_id: `plant-${String(plantIdRef.next++).padStart(4, '0')}`,
         start: bas + start,
         end: bas + end,
         meta,
@@ -160,7 +161,7 @@ function laggTillMening(text, mall, varden, paFacit) {
   return { text: text + mening + '\n\n', spans };
 }
 
-function byggDokument(dokId, uppgifter, slump, namnpool, mallar) {
+function byggDokument(dokId, uppgifter, slump, namnpool, mallar, plantIdRef) {
   const dokTyp = slump.val(DOKUMENTTYPER);
   let text = '';
   const spans = [];
@@ -198,13 +199,13 @@ function byggDokument(dokId, uppgifter, slump, namnpool, mallar) {
         }
       }
       for (const p of platshallareIMall(mallNamn)) forbrukaKvot(kvotKvar, p);
-      const r1 = laggTillMening(text, mallNamn, vardenNamn, (nyckel, varde) => facitNamn[nyckel] || null);
+      const r1 = laggTillMening(text, mallNamn, vardenNamn, (nyckel, varde) => facitNamn[nyckel] || null, plantIdRef);
       text = r1.text;
       spans.push(...r1.spans);
 
       const mallOrd = valjMening(slump, mallar, dokTyp, 'kollision', 'ORD', kvotKvar);
       forbrukaKvot(kvotKvar, 'ORD');
-      const r2 = laggTillMening(text, mallOrd, { ORD: upp.ord.toLowerCase() }, () => null);
+      const r2 = laggTillMening(text, mallOrd, { ORD: upp.ord.toLowerCase() }, () => null, plantIdRef);
       text = r2.text;
     } else if (upp.typ === 'namn_vanlig') {
       const namn = valjNamn(namnpool, slump);
@@ -224,7 +225,7 @@ function byggDokument(dokId, uppgifter, slump, namnpool, mallar) {
         }
       }
       for (const p of platshallareIMall(mall)) forbrukaKvot(kvotKvar, p);
-      const r = laggTillMening(text, mall, varden, (nyckel) => facitMap[nyckel] || null);
+      const r = laggTillMening(text, mall, varden, (nyckel) => facitMap[nyckel] || null, plantIdRef);
       text = r.text;
       spans.push(...r.spans);
     } else if (upp.typ === 'pnr') {
@@ -245,7 +246,7 @@ function byggDokument(dokId, uppgifter, slump, namnpool, mallar) {
         }
       }
       for (const p of platshallareIMall(mall)) forbrukaKvot(kvotKvar, p);
-      const r = laggTillMening(text, mall, varden, (nyckel) => facitMap[nyckel] || null);
+      const r = laggTillMening(text, mall, varden, (nyckel) => facitMap[nyckel] || null, plantIdRef);
       text = r.text;
       spans.push(...r.spans);
     } else if (upp.typ === 'tel') {
@@ -266,7 +267,7 @@ function byggDokument(dokId, uppgifter, slump, namnpool, mallar) {
         }
       }
       for (const p of platshallareIMall(mall)) forbrukaKvot(kvotKvar, p);
-      const r = laggTillMening(text, mall, varden, (nyckel) => facitMap[nyckel] || null);
+      const r = laggTillMening(text, mall, varden, (nyckel) => facitMap[nyckel] || null, plantIdRef);
       text = r.text;
       spans.push(...r.spans);
     }
@@ -306,10 +307,11 @@ function genereraHog({ seed, hogtyp, namnpool, kollisionsord, mallar }) {
   const dokument = [];
   const facit = [];
   const byggda = [];
+  const plantIdRef = { next: 1 };
 
   grupper.forEach((uppgifter, idx) => {
     const dokId = `doc-${String(idx + 1).padStart(4, '0')}`;
-    const dok = byggDokument(dokId, uppgifter, slump, namnpool, mallar);
+    const dok = byggDokument(dokId, uppgifter, slump, namnpool, mallar, plantIdRef);
     byggda.push(dok);
   });
 
@@ -361,6 +363,7 @@ function genereraHog({ seed, hogtyp, namnpool, kollisionsord, mallar }) {
 
     for (const s of spans) {
       facit.push({
+        plant_id: s.plant_id,
         'dokument-id': dok.id,
         typ: s.meta.typ,
         'undertyp eller ark': s.meta['undertyp eller ark'],

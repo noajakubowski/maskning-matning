@@ -13,7 +13,7 @@ Per planterad uppgift:
 
 | Fält | Innehåll |
 |---|---|
-| plant_id | Stabil identifierare för planterad uppgift; tilldelas före högbehandling (Tillägg L) |
+| plant_id | Tilldelas vid plantering, före all högbehandling; stabil identifierare i facit (Tillägg L) |
 | dokument-id | Identifierare inom högen |
 | typ | personnummer, telefonnummer, personnamn |
 | undertyp eller ark | längdform, skrivform, eller filterregel-ark |

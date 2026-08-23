@@ -1346,3 +1346,45 @@ binder. Sakinnehållet i hänvisningarna är korrekt, men regeln är satt i Till
 
 Hänvisningar till Tillägg D avser Tillägg E. Raderna i J och K rättas inte,
 eftersom de är frysta.
+
+---
+
+## Tillägg M — tolerans i L8:s verifieringsregel — 2026-08-23
+
+Besluten nedan fattades **2026-08-23**, efter tillägget i commit c0779c9.
+
+L8 anger att hög 1:s namnmätning är implementationsverifiering, och att avvikelse
+utöver intervallet mellan uppmätt och registerberäknat värde indikerar
+implementationsfel.
+
+Det finns en systematisk skillnad mellan de två storheterna som inte är ett fel.
+
+Täckningstalen i `filterregel.md` räknades på registerposter som **hela**
+strängar: ANN-KRISTIN är en egen post och räknas som täckt om den ligger i topp
+1000.
+
+E4 matchar bindestrecksnamn **segmentvis**. Ligger bara ett av segmenten i
+lexikonet blir utfallet delvis träff, och enligt L5 räknas delvis som miss.
+
+```
+registret        ANN-KRISTIN i topp 1000     -> täckt
+detektorn        Ann + Kristin, ett finns    -> delvis
+L5               delvis                      -> miss
+```
+
+Samma namn räknas alltså som täckt i beräkningen och som miss i mätningen.
+Uppmätt i hög 1: 6 delvisa av 400.
+
+**Gällande**
+
+L8:s verifiering omfattar endast namndelar **utan** bindestreck. Namn med
+bindestreck utesluts ur jämförelsen mellan uppmätt och registerberäknat värde,
+och antalet uteslutna redovisas **alltid**.
+
+Namn med bindestreck ingår oförändrat i själva mätningen och i alla redovisade
+frekvenser. Det är endast verifieringsjämförelsen som undantar dem.
+
+**Skäl**
+
+Registerberäkningen och detektorn besvarar olika frågor om bindestrecksnamn. Att
+jämföra dem skulle producera falsklarm om implementationsfel där ingen finns.
