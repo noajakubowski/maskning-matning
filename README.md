@@ -52,6 +52,9 @@ behöva upptäcka dem igen.
 | `sha256sum` finns inte på macOS. Under `set -e` avbryter skriptet mitt i. | `shasum -a 256` |
 | `grep` är ugrep på den här maskinen. Långa teckenklassrepetitioner som `[^<>]{0,120}` över UTF-8 spräcker komplexitetsgränsen och hänger tills kommandot timar ut. | Textutvinning ur HTML och XML görs i Python, inte med `grep -oE`. |
 | `set -euo pipefail` avbryter **inte** vid fel på den här maskinen. Skalet rapporterar errexit som påslaget, och `$-` innehåller `e`, men körningen fortsätter ändå efter ett kommando som avslutar med kod skild från noll. | Avsluta varje kontroll med `|| { echo "AVBRYT: <skäl>"; exit 1; }`. Alternativt: lägg skriptet i en fil och kör `zsh skript.sh` — i en riktig subshell fungerar `set -e` som avsett. |
+| zsh har MULTIOS påslaget. Konstruktionen `2>&1 >/dev/null` omdirigerar inte — den **duplicerar** utdata till flera mål. En kontroll av vilken ström en rad hamnar på ger då fel svar: samma rad syns på båda. | Fånga strömmarna i separata filer: `kommando >/tmp/ut.txt 2>/tmp/fel.txt` och läs dem var för sig. |
+
+Samma mönster gäller MULTIOS-fällan: ett kommando som ser ut att göra en sak och gör en annan, och där felet inte syns förrän någon letar efter det.
 
 Detta är den farligaste av de tre fällorna, av samma skäl som gäller de andra två:
 skyddet ser ut att fungera.

@@ -10,6 +10,16 @@
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
+
+// Unicode-bokstäver och siffror enligt JavaScript-identifiere (ID_Start / ID_Continue).
+function arIdentStart(tecken) {
+  return /[\p{L}_$]/u.test(tecken);
+}
+
+function arIdentFortsattning(tecken) {
+  return /[\p{L}\p{Nd}_$]/u.test(tecken);
+}
 
 // ── Tokenizer ───────────────────────────────────────────────────────────────
 
@@ -198,7 +208,7 @@ function tokenize(kall, filnamn) {
   function lasIdentifier() {
     const p = pos();
     let value = '';
-    while (i < len && /[a-zA-Z0-9_$]/.test(kall[i])) {
+    while (i < len && arIdentFortsattning(kall[i])) {
       value += kall[i];
       hoppa();
     }
@@ -285,7 +295,7 @@ function tokenize(kall, filnamn) {
       return;
     }
 
-    if (/[a-zA-Z_$]/.test(c)) {
+    if (arIdentStart(c)) {
       lasIdentifier();
       return;
     }
@@ -590,13 +600,10 @@ class Parser {
   parseParams() {
     const params = [];
     while (!this.at('punct', ')')) {
-      if (this.at('punct', '{')) {
-        this.advance();
-        while (!this.at('punct', '}')) {
-          params.push(this.parseBindingPattern());
-          if (this.at('punct', ',')) this.advance();
-        }
-        this.expect('punct', '}');
+      if (this.at('operator', '...')) {
+        params.push(this.parseRestElement());
+      } else if (this.at('punct', '{')) {
+        params.push(this.parseBindingPattern());
       } else if (this.at('punct', '[')) {
         params.push(this.parseArrayPattern());
       } else {
@@ -615,13 +622,36 @@ class Parser {
     return params;
   }
 
+  parseRestElement() {
+    const start = this.expect('operator', '...');
+    const argument = this.parseBindingPattern();
+    return { type: 'RestElement', argument, rad: start.rad, kol: start.kol };
+  }
+
   parseBindingPattern() {
     if (this.at('punct', '[')) return this.parseArrayPattern();
     if (this.at('punct', '{')) {
       this.advance();
       const props = [];
       while (!this.at('punct', '}')) {
-        const key = this.at('identifier') ? this.parseBindingIdentifier() : this.parseStringLiteral();
+        if (this.at('operator', '...')) {
+          props.push(this.parseRestElement());
+          if (this.at('punct', ',')) this.advance();
+          continue;
+        }
+        const key = (this.at('identifier') || this.at('keyword'))
+          ? this.parseBindingIdentifier()
+          : this.at('string')
+            ? this.parseStringLiteral()
+            : (() => {
+              const t = this.peek();
+              throw new ParseFel(
+                'Förväntade egenskapsnamn i destrukturering',
+                this.filnamn,
+                t ? t.rad : 1,
+                t ? t.kol : 1,
+              );
+            })();
         let value = key;
         if (this.at('punct', ':')) {
           this.advance();
@@ -645,7 +675,11 @@ class Parser {
         this.advance();
         continue;
       }
-      elements.push(this.parseBindingPattern());
+      if (this.at('operator', '...')) {
+        elements.push(this.parseRestElement());
+      } else {
+        elements.push(this.parseBindingPattern());
+      }
       if (this.at('punct', ',')) this.advance();
     }
     this.expect('punct', ']');
@@ -1350,14 +1384,14 @@ function granskaKall(kall, filnamn, kontroller) {
   try {
     ast = parseKall(kall, filnamn);
   } catch (err) {
-    if (err instanceof ParseFel) {
-      return {
-        kod: 2,
-        brister: [],
-        parseFel: `${filnamn}:${err.rad}:${err.kol} ${err.message}`,
-      };
-    }
-    throw err;
+    const rad = err instanceof ParseFel ? err.rad : 1;
+    const kol = err instanceof ParseFel ? err.kol : 1;
+    const meddelande = err instanceof ParseFel ? err.message : String(err.message || err);
+    return {
+      kod: 2,
+      brister: [],
+      parseFel: `${filnamn}:${rad}:${kol} ${meddelande}`,
+    };
   }
 
   const brister = [];
@@ -1419,33 +1453,68 @@ function granskaSokvag(mal, kontroller) {
   }
 
   const filer = listaJsFiler(mal);
-  if (filer.length === 0) {
-    return { kod: 2, brister: [], parseFel: null, meddelande: 'Inga .js-filer hittades' };
+  const antalFiler = filer.length;
+  if (antalFiler === 0) {
+    return {
+      kod: 2,
+      brister: [],
+      parseFel: null,
+      meddelande: 'Inga .js-filer hittades',
+      antalFiler: 0,
+      antalParsade: 0,
+    };
   }
 
+  // Ett OK som bygger på en delmängd av filerna är farligare än ett rent fel,
+  // eftersom ingen letar efter det. Parsning måste lyckas för varje fil,
+  // annars är hela körningen kod 2 — granskningen kunde inte genomföras.
   const allaBrister = [];
-  let parseFel = null;
+  const parseFel = [];
+  let antalParsade = 0;
 
   for (const fil of filer) {
     const kall = fs.readFileSync(fil, 'utf8');
     const resultat = granskaKall(kall, fil, kontroller);
     if (resultat.parseFel) {
-      parseFel = resultat.parseFel;
-      return { kod: 2, brister: [], parseFel };
+      parseFel.push(resultat.parseFel);
+      continue;
     }
+    antalParsade++;
     allaBrister.push(...resultat.brister);
   }
 
-  return { kod: allaBrister.length > 0 ? 1 : 0, brister: allaBrister, parseFel: null };
+  if (parseFel.length > 0) {
+    return {
+      kod: 2,
+      brister: [],
+      parseFel,
+      antalFiler,
+      antalParsade,
+    };
+  }
+
+  return {
+    kod: allaBrister.length > 0 ? 1 : 0,
+    brister: allaBrister,
+    parseFel: null,
+    antalFiler,
+    antalParsade,
+  };
 }
 
 function skrivResultat(resultat, kontroller) {
+  if (resultat.antalFiler !== undefined) {
+    console.log(`Granskade ${resultat.antalParsade} av ${resultat.antalFiler} .js-filer`);
+  }
   if (resultat.meddelande) {
     console.error(resultat.meddelande);
     return;
   }
   if (resultat.parseFel) {
-    console.error(`BRIST: parsning misslyckades — ${resultat.parseFel}`);
+    const fel = Array.isArray(resultat.parseFel) ? resultat.parseFel : [resultat.parseFel];
+    for (const f of fel) {
+      console.error(`BRIST: parsning misslyckades — ${f}`);
+    }
     return;
   }
 
@@ -1555,6 +1624,138 @@ function korSjalvtest() {
     { importer: [], importerAntal: 0, strangInnehaller: 'detektor' },
     importKontroll,
   );
+
+  try {
+    parseKall('const frö = 1; function längd(ärende) { return ärende; }', '<unicode>');
+  } catch (err) {
+    console.error(`BRIST självtest: unicode — ${err}`);
+    fel++;
+  }
+
+  try {
+    parseKall('function f(frö, längd, ärende) {}', '<unicode>');
+  } catch (err) {
+    console.error(`BRIST självtest: unicode-identifierare — ${err}`);
+    fel++;
+  }
+
+  kontrollera(
+    'unicode anrop',
+    'function f(frö) { return Math.random(); }',
+    { mathRandom: 1 },
+    anropKontroll,
+  );
+
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'granska-test-'));
+  try {
+    fs.writeFileSync(path.join(tmpDir, 'bra.js'), 'const x = 1;');
+    fs.writeFileSync(path.join(tmpDir, 'trasig.js'), 'const x = (;');
+    const oparsbar = granskaSokvag(tmpDir, anropKontroll);
+    if (oparsbar.kod !== 2) {
+      console.error('BRIST självtest: oparsbar katalog — förväntade kod 2');
+      fel++;
+    } else if (oparsbar.antalFiler !== 2 || oparsbar.antalParsade !== 1) {
+      console.error(`BRIST självtest: oparsbar katalog — antal ${oparsbar.antalParsade}/${oparsbar.antalFiler}`);
+      fel++;
+    } else if (!Array.isArray(oparsbar.parseFel) || !oparsbar.parseFel.some((f) => f.includes('trasig.js'))) {
+      console.error('BRIST självtest: oparsbar katalog — trasig fil namnges inte');
+      fel++;
+    }
+
+    const tmpDir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'granska-test-'));
+    try {
+      fs.writeFileSync(path.join(tmpDir2, 'a.js'), 'const a = 1;');
+      fs.writeFileSync(path.join(tmpDir2, 'b.js'), 'const b = 2;');
+      const raknare = granskaSokvag(tmpDir2, anropKontroll);
+      if (raknare.antalFiler !== 2 || raknare.antalParsade !== 2) {
+        console.error('BRIST självtest: räknare — fel antal filer');
+        fel++;
+      } else {
+        let stdoutUtskrift = '';
+        let stderrUtskrift = '';
+        const sparaLog = console.log;
+        const sparaErr = console.error;
+        console.log = (...args) => {
+          stdoutUtskrift += args.join(' ') + '\n';
+        };
+        console.error = (...args) => {
+          stderrUtskrift += args.join(' ') + '\n';
+        };
+        skrivResultat(raknare, anropKontroll);
+        console.log = sparaLog;
+        console.error = sparaErr;
+        if (!/Granskade 2 av 2 \.js-filer/.test(stdoutUtskrift)) {
+          console.error('BRIST självtest: räknare — utskriften saknar filantal på stdout');
+          fel++;
+        }
+        if (stderrUtskrift.length > 0) {
+          console.error('BRIST självtest: tom stderr — vid lyckad körning skrevs till stderr');
+          fel++;
+        }
+      }
+    } finally {
+      fs.rmSync(tmpDir2, { recursive: true, force: true });
+    }
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+
+  const restSpreadKall = [
+    'function f(...args) {}',
+    'const g = (...args) => args;',
+    'h(...lista);',
+    'const [a, ...rest] = arr;',
+    'const { x, ...ovrigt } = obj;',
+    'const kopia = { ...obj, y: 1 };',
+    'const ihop = [...a, ...b];',
+  ].join('\n');
+  try {
+    parseKall(restSpreadKall, '<rest-spread>');
+  } catch (err) {
+    console.error(`BRIST självtest: rest/spread — ${err}`);
+    fel++;
+  }
+
+  try {
+    parseKall('function f(a, ...rest) { return rest; }', '<rest-param>');
+  } catch (err) {
+    console.error(`BRIST självtest: rest i parameter — ${err}`);
+    fel++;
+  }
+
+  try {
+    parseKall('const g = (...args) => args.length;', '<rest-pil>');
+  } catch (err) {
+    console.error(`BRIST självtest: rest i pilfunktion — ${err}`);
+    fel++;
+  }
+
+  try {
+    parseKall('f(...lista); const h = [...a, ...b]; const o = { ...x, y: 1 };', '<spread>');
+  } catch (err) {
+    console.error(`BRIST självtest: spread i anrop och literal — ${err}`);
+    fel++;
+  }
+
+  try {
+    parseKall('const [a, ...rest] = arr; const { x, ...ovrigt } = obj;', '<rest-destrukt>');
+  } catch (err) {
+    console.error(`BRIST självtest: destrukturering med rest — ${err}`);
+    fel++;
+  }
+
+  kontrollera(
+    'anrop gömt bakom rest',
+    'function f(...args) { return Math.random(); }',
+    { mathRandom: 1 },
+    anropKontroll,
+  );
+
+  const trasig = granskaKall('function ( { [ =', '<trasig>', anropKontroll);
+  if (trasig.kod !== 2 || !trasig.parseFel) {
+    console.error('BRIST självtest: trasig syntax — förväntade kod 2');
+    fel++;
+  }
 
   if (fel === 0) {
     console.log('OK  självtest');
