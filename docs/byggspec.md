@@ -166,3 +166,32 @@ Spannunion beräknas över **samtliga** flaggor i en mätuppsättning och
 **aldrig** per typ (Tillägg J). Detektorunion och spannunion ska hållas
 isär: detektorunion slår ihop mönster och lexikon; spannunion slår ihop
 överlappande flaggspann oavsett typ.
+
+## Toleranser mot referensfixtur
+
+Fastställda före M4:s tester skrevs, så att en tolerans inte kan väljas
+för att få ett test att passera.
+
+| Metod | Konvergenskrav | Tolerans mot fixtur |
+|---|---|---|
+| Wilson | sluten formel, ingen iteration | 1e-12 |
+| Tango score | rotsökning till 1e-10 | 1e-7 |
+
+**Varför Tango behöver en tolerans alls.** PropCIs rotsökning konvergerar
+inte till exakt samma tal från båda hållen: det symmetriska fallet
+(5, 5, 50) ger nedre och övre gräns som skiljer sig i sjunde decimalen.
+Vår implementation kan därför omöjligt matcha fixturen bit för bit, även
+när metoden är korrekt.
+
+**Varför 1e-7 och inte 1e-6.** En andel på 1e-6 motsvarar fjärde
+decimalen i procent, alltså den nivå resultaten redovisas på. En tolerans
+där tillåter avvikelse i den sista siffra någon läser, och testar då
+ingenting. 1e-7 är en tiondel av redovisningsnivån.
+
+**Varför konvergenskravet står först.** Med rotsökning till 1e-10 styrs
+avvikelsen mot fixturen av PropCIs egen asymmetri, inte av vår. Faller
+testet på 1e-7 är det vår rotsökare som är för slapp — vilket är rätt
+sak att fälla på.
+
+**Wilson** beräknas med sluten formel på båda sidor. Kvar är enbart
+flyttalsbrus i dubbelprecision, långt under 1e-12.
