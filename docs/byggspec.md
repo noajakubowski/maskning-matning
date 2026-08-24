@@ -175,23 +175,49 @@ för att få ett test att passera.
 | Metod | Konvergenskrav | Tolerans mot fixtur |
 |---|---|---|
 | Wilson | sluten formel, ingen iteration | 1e-12 |
-| Tango score | rotsökning till 1e-10 | 1e-7 |
+| Tango score | rotsökning till 1e-10 | 1.0e-06 |
 
-**Varför Tango behöver en tolerans alls.** PropCIs rotsökning konvergerar
-inte till exakt samma tal från båda hållen: det symmetriska fallet
-(5, 5, 50) ger nedre och övre gräns som skiljer sig i sjunde decimalen.
-Vår implementation kan därför omöjligt matcha fixturen bit för bit, även
-när metoden är korrekt.
+### Hur Tango-toleransen härleddes
 
-**Varför 1e-7 och inte 1e-6.** En andel på 1e-6 motsvarar fjärde
-decimalen i procent, alltså den nivå resultaten redovisas på. En tolerans
-där tillåter avvikelse i den sista siffra någon läser, och testar då
-ingenting. 1e-7 är en tiondel av redovisningsnivån.
+PropCIs rotsökning har en fast upplösning på 2^-24, ungefär 5,96e-08.
+Bruset är kvantiserat: varje avvikelse är en heltalsmultipel av det
+värdet, oberoende av n och av intervallets bredd. Det är alltså inte
+något som går att dimensionera bort med större stickprov.
 
-**Varför konvergenskravet står först.** Med rotsökning till 1e-10 styrs
-avvikelsen mot fixturen av PropCIs egen asymmetri, inte av vår. Faller
-testet på 1e-7 är det vår rotsökare som är för slapp — vilket är rätt
-sak att fälla på.
+Taket mättes på symmetriska fall, där det sanna intervallet är exakt
+symmetriskt kring noll och all avvikelse därför är konvergensbrus i
+referensen. Uppmätt tak: 1.788e-07.
 
-**Wilson** beräknas med sluten formel på båda sidor. Kvar är enbart
-flyttalsbrus i dubbelprecision, långt under 1e-12.
+Regeln angavs före mätningen: tolerans = uppmätt tak gånger tre,
+avrundat uppåt till närmaste 1, 2 eller 5 gånger en tiopotens.
+Det ger 1.0e-06.
+
+### Varför konvergenskravet står först
+
+Med rotsökning till 1e-10 i vår implementation domineras avvikelsen mot
+fixturen av PropCIs kvantisering, inte av vår. Faller testet är det
+därför vår rotsökare som är för slapp — vilket är rätt sak att fälla på.
+
+### Förhållande till redovisningsnivån
+
+Resultaten redovisas med en decimal i procent, alltså 1e-3 i andel.
+Toleransen ligger tusen gånger under den sista siffra någon läser.
+En tidigare formulering påstod att 1e-6 låg på redovisningsnivån. Det
+var räknat på fyra decimaler i procent, vilket inte redovisas.
+
+### Om testet fäller
+
+Första frågan är om avvikelsen kommer från PropCIs och inte från vår
+rotsökare. Kontrollen är att köra samma fall symmetriskt: ger PropCIs
+själv en asymmetri i samma storleksordning, är det referensen som brusar.
+
+Toleransen höjs inte i efterhand. Skulle ett fixturfall visa sig nå
+toleransen ska det fallet tas bort ur fixturen.
+
+### Vad asymmetritestet inte mäter
+
+Det fungerar bara för symmetriska fall. För de asymmetriska fallen i
+fixturen finns ingen motsvarande mätning av PropCIs konvergensavvikelse.
+Den uppmätta marginalen är därför en övre uppskattning, inte en nedre.
+Inget fall med n under 20 bör läggas till i fixturen utan att
+asymmetrin mäts först.
