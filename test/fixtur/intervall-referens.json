@@ -1,0 +1,96 @@
+{
+  "beskrivning": "Wilson-referens för 95-procentiga intervall. Räknad av exekveraren med statsmodels, aldrig av modellkod. Används endast i test/, aldrig i mätkedjan.",
+  "byggd_med": {
+    "python": "3.9.6",
+    "scipy": "1.13.1",
+    "statsmodels": "0.14.6"
+  },
+  "metod": "statsmodels.stats.proportion.proportion_confint(method='wilson')",
+  "wilson_95": [
+    {
+      "traff": 0,
+      "n": 200,
+      "lo": 0.0,
+      "hi": 0.0188453264
+    },
+    {
+      "traff": 1,
+      "n": 200,
+      "lo": 0.0008831687,
+      "hi": 0.0277737044
+    },
+    {
+      "traff": 20,
+      "n": 200,
+      "lo": 0.0656704487,
+      "hi": 0.1494058124
+    },
+    {
+      "traff": 87,
+      "n": 400,
+      "lo": 0.1798616207,
+      "hi": 0.2605128256
+    },
+    {
+      "traff": 400,
+      "n": 400,
+      "lo": 0.9904877057,
+      "hi": 1.0
+    },
+    {
+      "traff": 0,
+      "n": 43,
+      "lo": 0.0,
+      "hi": 0.0820098032
+    },
+    {
+      "traff": 4,
+      "n": 43,
+      "lo": 0.0367716406,
+      "hi": 0.2160270364
+    },
+    {
+      "traff": 53,
+      "n": 99,
+      "lo": 0.4376308917,
+      "hi": 0.6304350428
+    },
+    {
+      "traff": 310,
+      "n": 400,
+      "lo": 0.7315729789,
+      "hi": 0.8131952592
+    },
+    {
+      "traff": 1,
+      "n": 1,
+      "lo": 0.2065493144,
+      "hi": 1.0
+    },
+    {
+      "traff": 0,
+      "n": 1,
+      "lo": 0.0,
+      "hi": 0.7934506856
+    },
+    {
+      "traff": 500,
+      "n": 1000,
+      "lo": 0.4690696004,
+      "hi": 0.5309303996
+    },
+    {
+      "traff": 3,
+      "n": 400,
+      "lo": 0.0025538892,
+      "hi": 0.0218157207
+    },
+    {
+      "traff": 399,
+      "n": 400,
+      "lo": 0.9859767149,
+      "hi": 0.9995585522
+    }
+  ],
+  "tango_95": "SAKNAS — ingen oberoende referens hittad ännu, se steg 2"
+}
