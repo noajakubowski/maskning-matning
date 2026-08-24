@@ -1388,3 +1388,67 @@ frekvenser. Det är endast verifieringsjämförelsen som undantar dem.
 
 Registerberäkningen och detektorn besvarar olika frågor om bindestrecksnamn. Att
 jämföra dem skulle producera falsklarm om implementationsfel där ingen finns.
+
+---
+
+## Tillägg N — M3 regelmotor utgår ur version ett — 2026-08-24
+
+Besluten nedan fattades **2026-08-24**, efter commit 1d4a46d och före första
+skarpa körningen.
+
+### N1 — Beslutet
+
+Grunddokumentet listar M3, minimal regelmotor med regel-id och hash, bland de
+moduler som byggs. Den byggs inte.
+
+M1, M2 och M4 är byggda, granskade och commitade. M3 är inte påbörjad, och
+byggspec anger "öppet — avgörs vid bygget" på samtliga punkter: vilket regel-id
+som sätts, vad hashen beräknas över, och hur den kopplas till M2:s utdata och
+M4:s inläsning.
+
+### N2 — Skälet
+
+Tiden räckte inte. Byggperioden löper till onsdag 26 augusti, och kvar står den
+publicerade sidan med siffror, frö och korpusbeskrivning, samt den statiska
+reserven — ingen av dem påbörjad.
+
+M3 påverkar inget redovisat tal. Den ger spårbarhet från flagga till regel,
+vilket hör till berättelsen om ett granskningsbart verktyg, men den producerar
+ingen siffra som ingår i mätningen och ändrar ingen som gör det.
+
+Att bygga den hade dessutom krävt en omgång bara för att fastställa vad den ska
+göra, eftersom byggspec inte anger det.
+
+### N3 — Vad som går förlorat
+
+Utan M3 finns ingen maskinläsbar koppling från en enskild flagga till den regel
+som orsakade den. En granskare som frågar varför ett visst teckenspann flaggades
+måste läsa detektorkoden i stället för att slå upp ett regel-id.
+
+Det försvagar spårbarheten i verktyget, men inte i mätningen: varje redovisat tal
+går fortfarande att härleda ur facit, flaggfiler och frö.
+
+### N4 — Samma behandling som övriga strukna
+
+M3 förs till samma kategori som M6 granskningsvy, M8 modelladapter och M9
+mellanserver, och som den fjärde högen om indirekt utpekande.
+
+Struken med skäl, daterad, före mätningen. Inte tystad bort.
+
+### N5 — Vad som byggs i version ett
+
+```
+M1 generator      byggd
+M2 detektorer     byggd
+M4 poängsättning  byggd
+
+M3 regelmotor     utgår, Tillägg N
+M5 batch          utgår, tiden
+M6 granskningsvy  utgår, grunddokumentet
+M7 logg           utgår, tiden
+M8 modelladapter  utgår, grunddokumentet
+M9 mellanserver   utgår, grunddokumentet
+```
+
+Mätkedjan är därmed komplett: generator, detektorer, poängsättning. M4
+producerar samtliga siffror.

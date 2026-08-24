@@ -115,12 +115,15 @@ byggs tillsammans med M2.
 
 ## M3 — minimal regelmotor
 
-| Parameter | Status |
+STRUKEN — se Tillägg N. Avsnittet står kvar som dokumentation av vad som var
+öppet när beslutet togs.
+
+~~| Parameter | Status |
 |---|---|
 | Regel-id per flagga | öppet — avgörs vid bygget |
 | Hash — beräknas över | öppet — avgörs vid bygget |
 | Koppling till M2:s utdata | öppet — avgörs vid bygget |
-| Koppling till M4:s inläsning | öppet — avgörs vid bygget |
+| Koppling till M4:s inläsning | öppet — avgörs vid bygget |~~
 
 ---
 

@@ -46,6 +46,7 @@ här, med hänvisning till tillägget.
 | Hög 1, namn | implementationsverifiering, inte empiri; jämförelsen omfattar endast namndelar utan bindestreck, antalet uteslutna redovisas | Tillägg L och M | ospecificerat tidigare |
 | plant_id | tilldelas vid plantering, före all högbehandling | Tillägg L | ospecificerat tidigare |
 | Tillägg D | existerar inte; hänvisningar avser Tillägg E | Tillägg L | ospecificerat tidigare |
+| M3 regelmotor | utgår ur version ett | Tillägg N | "byggs" i grunddokumentet |
 
 ## När frysningen binder
 
