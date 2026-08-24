@@ -9,15 +9,32 @@ av tester — aldrig av något i mätkedjan.
 | Metod | Referens | Status |
 |---|---|---|
 | Wilson | statsmodels.stats.proportion.proportion_confint | ÄKTA oberoende referens |
-| Tango score | ingen hittad lokalt | EJ VALIDERAD |
+| Tango score | PropCIs::scoreci.mp i R | ÄKTA oberoende referens |
 
 Wilson-värdena kommer ur ett publicerat, granskat bibliotek skrivet av
 andra. En avvikelse mellan M4 och dessa tal är ett fel i M4.
 
-Tango har ingen referens. En handskriven implementation som jämförs med
-en annan handskriven implementation validerar ingenting — filen jämförs
-med en kopia av sig själv. Fältet `tango_95` innehåller därför en
-förklarande sträng, inte tal.
+Tango-värdena kommer ur R-paketet PropCIs, skrivet av en annan författare
+i ett annat språk. En avvikelse mellan M4 och dessa tal är ett fel i M4.
+
+## TECKENKONVENTION — läs innan du rör Tango-värdena
+
+`scoreci.mp(n01, n10, n)` ger intervallet för **(n10 − n01)/n**.
+Tillägg L2 definierar delta som **(n01 − n10)/n**. Tecknet är alltså
+inverterat, och värdena i fixturen är `[-hi, -lo]` av R:s utdata.
+
+Bevis: spegelparet ger exakta spegelintervall.
+
+    scoreci.mp(60, 20, 1000)  ->  [-0,0584; -0,0231]
+    scoreci.mp(20, 60, 1000)  ->  [+0,0231; +0,0584]
+
+De symmetriska fallen (0,0), (30,30) och (5,5) ligger centrerade kring
+noll, vilket visar att det är en teckenvändning och inte en förskjutning.
+
+Byggs fixturen rakt av från R får varje parad differens i M4 fel tecken.
+Intervallet blir korrekt brett, korrekt centrerat, ligger inom rätt
+område och innehåller punktskattningen — varje rimlighetskontroll
+passerar. Rapporten hade sagt att OCR-skada gör detektorn bättre.
 
 ## Kandidat för Tango-referens
 

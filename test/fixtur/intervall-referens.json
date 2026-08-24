@@ -3,7 +3,9 @@
   "byggd_med": {
     "python": "3.9.6",
     "scipy": "1.13.1",
-    "statsmodels": "0.14.6"
+    "statsmodels": "0.14.6",
+    "R": "4.6.1",
+    "PropCIs": "0.3.0"
   },
   "metod": "statsmodels.stats.proportion.proportion_confint(method='wilson')",
   "wilson_95": [
@@ -92,5 +94,95 @@
       "hi": 0.9995585522
     }
   ],
-  "tango_95": "SAKNAS — ingen oberoende referens hittad ännu, se steg 2"
+  "tango_95": [
+    {
+      "n01": 60,
+      "n10": 20,
+      "n": 1000,
+      "delta": 0.04,
+      "lo": 0.0230684328,
+      "hi": 0.0583542061
+    },
+    {
+      "n01": 20,
+      "n10": 60,
+      "n": 1000,
+      "delta": -0.04,
+      "lo": -0.0583542061,
+      "hi": -0.0230684328
+    },
+    {
+      "n01": 0,
+      "n10": 0,
+      "n": 1000,
+      "delta": 0.0,
+      "lo": -0.003826797,
+      "hi": 0.003826797
+    },
+    {
+      "n01": 120,
+      "n10": 5,
+      "n": 400,
+      "delta": 0.2875,
+      "lo": 0.2418298312,
+      "hi": 0.3357870623
+    },
+    {
+      "n01": 30,
+      "n10": 30,
+      "n": 400,
+      "delta": 0.0,
+      "lo": -0.0387782454,
+      "hi": 0.0387782454
+    },
+    {
+      "n01": 94,
+      "n10": 12,
+      "n": 400,
+      "delta": 0.205,
+      "lo": 0.1596927413,
+      "hi": 0.2526825166
+    },
+    {
+      "n01": 1,
+      "n10": 0,
+      "n": 100,
+      "delta": 0.01,
+      "lo": -0.0273633784,
+      "hi": 0.0544862282
+    },
+    {
+      "n01": 5,
+      "n10": 5,
+      "n": 50,
+      "delta": 0.0,
+      "lo": -0.135432303,
+      "hi": 0.1354322433
+    },
+    {
+      "n01": 200,
+      "n10": 50,
+      "n": 1000,
+      "delta": 0.15,
+      "lo": 0.120707491,
+      "hi": 0.1800128669
+    },
+    {
+      "n01": 400,
+      "n10": 0,
+      "n": 400,
+      "delta": 1.0,
+      "lo": 0.9809754491,
+      "hi": 1.0
+    },
+    {
+      "n01": 2,
+      "n10": 1,
+      "n": 20,
+      "delta": 0.05,
+      "lo": -0.1613935024,
+      "hi": 0.2656305194
+    }
+  ],
+  "tango_kalla": "PropCIs::scoreci.mp i R. TECKENMAPPNING: scoreci.mp(n01, n10, n) ger intervallet för (n10 - n01)/n. Tillägg L2 definierar delta = (n01 - n10)/n. Värdena nedan är därför [-hi, -lo] av R:s utdata. Bevisat med spegelparet (60,20) och (20,60), som ger exakta spegelintervall."
 }
