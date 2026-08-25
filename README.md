@@ -1,3 +1,14 @@
+## Börja här
+
+Det här repot är ett förhandsregistrerat mätsystem för ett verktyg som maskar
+personuppgifter i myndighetsdokument. Alla metodval som påverkar mätresultatet
+låstes i git innan den första skarpa körningen gjordes; commit-historiken är
+beviset för den ordningen.
+
+Siffrorna från mätningen står i [`docs/gallande-varden.md`](docs/gallande-varden.md),
+under avsnitten om överflaggning och i tabellen över gällande värden. Metodval
+och låsningar finns i [`docs/forhandsregistrering.md`](docs/forhandsregistrering.md).
+
 # maskning-matning
 
 Verktyg som maskar personuppgifter i myndighetsdokument, och en mätrigg som

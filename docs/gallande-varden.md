@@ -73,3 +73,37 @@ Ersätter, inte som en egen rad.
 
 Filen är repots konfliktlösare. Två rader för samma ämne gör den oanvändbar för
 sitt enda syfte.
+
+## Begränsning — hög 3 saknar attribution
+
+Hög tre innehåller ord som fungerar både som personnamn och som vanliga ord i
+löptext. Varje kollisionsord förekommer två gånger i samma dokument: en gång
+planterat som namn och en gång som vanligt ord i brödtexten.
+
+Den redovisade träffgraden för personnamn och kollisionsord avser endast
+namnförekomsten. Om den andra förekomsten flaggas fel hamnar den i den samlade
+överflaggningsmetriken tillsammans med all annan överflaggning, utan att kunna
+särskiljas från den.
+
+Överflaggningen är högre i hög tre än i hög ett, men skillnaden kan inte
+tillskrivas kollisionsorden. Korpusarna skiljer sig åt, och Tillägg O förbjuder
+parad jämförelse mellan högar som inte delar samma plantering. Talen för
+respektive hög står i avsnittet om överflaggning.
+
+Att kunna säga hur mycket av överflaggningen som kommer från kollisionsordens
+vanliga ord hade krävt att varje överflaggat spann märktes med om strängen finns
+i kollisionslistan. Det är inte byggt — tiden räckte inte.
+
+## Förkastad körning — skarp-2026-08-24
+
+Körningen på fröet skarp-2026-08-24 gjordes innan M4:s utskriftsfel var rättat.
+Felet var att utskriften redovisade färre poster än facit innehöll, eftersom
+blockordningen byggde på en hårdkodad lista som saknade en undertyp. Själva
+beräkningen var korrekt; redovisningen var det inte.
+
+Körningen förkastas i sin helhet. Den är inte frusen och inga värden ur den
+gäller. En ny skarp körning görs på rättad kod; frö anges i den körningens
+resultat.
+
+Rättningen är verifierad genom att en post medvetet tappades i koden, varpå
+avstämningsspärren avbröt körningen med felkod och namngav det saknade blocket.

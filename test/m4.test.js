@@ -537,6 +537,39 @@ function testTypEtiketter() {
   else console.log('OK  typetiketter och filtrerad typförväxling i utskrift');
 }
 
+function testHog3AllaUndertyper() {
+  // testSummering kör på två syntetiska poster i en enda undertyp. Med två poster
+  // kan en utebliven undertyp inte uppstå, så kontrollen kunde aldrig fånga detta.
+  const data = lasGeneratorData();
+  if (!data) {
+    fail('Saknar namnpool.json för hög 3-blocktest');
+    return;
+  }
+  const { genereraHog, namnpool, kollisionsord, mallar } = data;
+  const seed = 'm4-hog3-block';
+  const hog3 = genereraHog({ seed, hogtyp: 3, namnpool, kollisionsord, mallar });
+  const hog = byggMiniHog(seed, 3, hog3.facit, [], []);
+  const ut = matHog(hog);
+  const facitUndertyper = new Set(
+    hog3.facit.map((p) => typEtikett(p.typ, p['undertyp eller ark'])),
+  );
+  const rubriker = new Set(
+    ut.matuppsattningar.monster.rader.filter((r) => r.rubrik).map((r) => r.rubrik),
+  );
+  console.log(`Granskade ${facitUndertyper.size} undertyper i hög 3`);
+  if (facitUndertyper.size === 0) fail('hög 3: noll undertyper i facit');
+  for (const etikett of facitUndertyper) {
+    if (!rubriker.has(etikett)) fail(`hög 3: saknar block för ${etikett}`);
+  }
+  if (ut.redovisadePoster !== hog3.facit.length) {
+    fail(`hög 3: redovisade ${ut.redovisadePoster} av ${hog3.facit.length}`);
+  } else if (!rubriker.has(typEtikett('personnamn', 'kollisionsord'))) {
+    fail('hög 3: saknar block personnamn / kollisionsord');
+  } else {
+    console.log('OK  varje undertyp i hög 3 har block i utskriften');
+  }
+}
+
 function testUtskriftAntal() {
   const rader = formatUtskrift({
     perHog: [{
@@ -582,7 +615,7 @@ function testUtskriftAntal() {
     return;
   }
   const utanN = rader.filter((r) => !/\bn=\d+/.test(r) && !/^(Frö|Högtyp|Mätuppsättning|Antal|IMPLEMENTATIONSVERIFIERING)/.test(r)
-    && !r.includes(' / '));
+    && !r.includes(' / ') && !/^redovisade poster:/.test(r));
   if (utanN.length) fail(`rader utan n= antal: ${utanN.join(' | ')}`);
   else console.log('OK  varje utskriven rad anger n= antal poster');
 }
@@ -599,6 +632,7 @@ testSummering();
 testDeltaTecken();
 testDeltaKontrollrakning();
 testTypEtiketter();
+testHog3AllaUndertyper();
 testPlantIdParning();
 testParadeSammaStrang();
 testParningSparrFelStrang();

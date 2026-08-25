@@ -34,13 +34,53 @@ function typEtikett(typ, undertyp) {
   return typ + ' / ' + undertyp;
 }
 
-function byggTypRader(perTyp) {
-  const map = new Map(perTyp.map((r) => [r.typ + '|' + r.undertyp, r]));
-  const rader = [];
+function typNyckel(typ, undertyp) {
+  return typ + '|' + undertyp;
+}
+
+function byggBlockOrdning(perTyp) {
+  const iFacit = new Set(perTyp.map((r) => typNyckel(r.typ, r.undertyp)));
+  const knownForTyp = new Map();
   for (const { typ, undertyp } of TYPBLOCK_ORDNING) {
-    const rad = map.get(typ + '|' + undertyp);
+    const key = typNyckel(typ, undertyp);
+    if (!iFacit.has(key)) continue;
+    if (!knownForTyp.has(typ)) knownForTyp.set(typ, []);
+    knownForTyp.get(typ).push(undertyp);
+  }
+  const typOrdning = [];
+  for (const { typ } of TYPBLOCK_ORDNING) {
+    if (knownForTyp.has(typ) && !typOrdning.includes(typ)) typOrdning.push(typ);
+  }
+  const allTyper = new Set(perTyp.map((r) => r.typ));
+  for (const typ of [...allTyper].sort()) {
+    if (!typOrdning.includes(typ)) typOrdning.push(typ);
+  }
+  const ordning = [];
+  for (const typ of typOrdning) {
+    const known = knownForTyp.get(typ) || [];
+    const knownSet = new Set(known);
+    const unknown = perTyp
+      .filter((r) => r.typ === typ && !knownSet.has(r.undertyp))
+      .map((r) => r.undertyp)
+      .sort();
+    for (const undertyp of known) ordning.push({ typ, undertyp });
+    for (const undertyp of unknown) ordning.push({ typ, undertyp });
+  }
+  return ordning;
+}
+
+function byggTypRader(perTyp) {
+  const map = new Map(perTyp.map((r) => [typNyckel(r.typ, r.undertyp), r]));
+  const ordning = byggBlockOrdning(perTyp);
+  const rader = [];
+  let redovisade = 0;
+  const skrivnaNycklar = new Set();
+  for (const { typ, undertyp } of ordning) {
+    const rad = map.get(typNyckel(typ, undertyp));
     if (!rad) continue;
     const n = rad.poster;
+    redovisade += n;
+    skrivnaNycklar.add(typNyckel(typ, undertyp));
     rader.push({ rubrik: typEtikett(typ, undertyp) });
     rader.push(wilsonRad('full träff', rad.full, n));
     rader.push(wilsonRad('delvis', rad.delvis, n));
@@ -53,7 +93,25 @@ function byggTypRader(perTyp) {
       ));
     }
   }
-  return rader;
+  return { rader, redovisade, skrivnaNycklar };
+}
+
+// En handskriven lista kan bli inaktuell igen nästa gång en undertyp tillkommer.
+// Avstämningsraden räknar det som faktiskt skrevs mot det som fanns och kan inte tystna.
+function kontrolleraAvstamning(facit, redovisade, skrivnaNycklar) {
+  const m = facit.length;
+  if (redovisade === m) return;
+  const facitNycklar = new Set(facit.map((p) => typNyckel(p.typ, p['undertyp eller ark'])));
+  for (const key of facitNycklar) {
+    if (!skrivnaNycklar.has(key)) {
+      const sep = key.indexOf('|');
+      console.error('BRIST: saknat block — ' + typEtikett(key.slice(0, sep), key.slice(sep + 1)));
+    }
+  }
+  console.error('BRIST: redovisade poster: ' + redovisade + ' av ' + m);
+  const err = new Error('redovisade poster: ' + redovisade + ' av ' + m);
+  err.kod = 1;
+  throw err;
 }
 
 function valjFlaggor(uppsattning, monster, lexikon) {
@@ -94,7 +152,14 @@ function matHog(hog) {
   for (const upp of MATUPPSATTNINGAR) {
     const flaggor = valjFlaggor(upp, hog.flaggorMonster, hog.flaggorLexikon);
     const r = matUppsattning(hog.facit, hog.dokument, flaggor);
-    const rader = byggTypRader(r.perTyp);
+    const { rader, redovisade, skrivnaNycklar } = byggTypRader(r.perTyp);
+    if (upp === 'monster') {
+      kontrolleraAvstamning(hog.facit, redovisade, skrivnaNycklar);
+      ut.redovisadePoster = redovisade;
+      ut.avstamningText = 'redovisade poster: ' + redovisade + ' av ' + hog.facit.length;
+    } else if (redovisade !== ut.redovisadePoster) {
+      kontrolleraAvstamning(hog.facit, redovisade, skrivnaNycklar);
+    }
 
     const boot = klusterbootstrapKvot(r.overflaggning.dokumentData, hog.seed + ':' + upp + ':over');
     const overAbs = r.overflaggning.dokumentData.reduce((s, d) => s + d.overflaggadeTecken, 0);
@@ -211,6 +276,9 @@ function formatUtskrift(resultat) {
       rader.push('  ' + m.overflaggning.textPer1000);
       rader.push('  ' + m.overflaggning.textSpann);
     }
+    if (hog.avstamningText) {
+      rader.push(hog.avstamningText);
+    }
   }
   for (const p of resultat.parvis) {
     rader.push(p.text);
@@ -227,4 +295,6 @@ module.exports = {
   formatUtskrift,
   valjFlaggor,
   typEtikett,
+  byggBlockOrdning,
+  byggTypRader,
 };
