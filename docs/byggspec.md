@@ -134,8 +134,9 @@ STRUKEN — se Tillägg N. Avsnittet står kvar som dokumentation av vad som var
 | Regelkälla | `docs/gallande-varden.md`, inte grunddokumentets matchningsavsnitt (Tillägg K, L) |
 | Terminalutskrift — innehåll | frö, högtyp, antal dokument, antal facitposter; per typ: full träff, delvis, miss, typförväxling per riktning, överflaggning absolut och per 1000 tecken med percentilintervall; Wilson-intervall där det är en proportion (Tillägg K, L) |
 | Ordning | öppet — avgörs vid bygget |
-| Differens mellan två högar | Tango score-intervall, 95 %, för varje par av högar; märks som parad i utskriften (Tillägg H, I, L) |
+| Differens mellan två högar | Tango score-intervall, 95 %, endast hög 1 mot hög 2; märks som parad i utskriften (Tillägg H, L, O) |
 | Parningsnyckel | plant_id; saknat plant_id stoppar körningen med felkod (Tillägg L) |
+| Parning — ursprunglig sträng | parningen avslutar med felkod om en parad post har olika ursprunglig sträng i de två högar (Tillägg O) |
 | Parad differens — utskrift | n01, n10 och n01+n10 skrivs alltid ut (Tillägg L) |
 | Hypotestest | inget p-värde beräknas (Tillägg L) |
 | Delvis träff | räknas som miss i binära beräkningar; redovisas i egen kolumn (Tillägg L) |

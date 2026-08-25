@@ -1452,3 +1452,81 @@ M9 mellanserver   utgår, grunddokumentet
 
 Mätkedjan är därmed komplett: generator, detektorer, poängsättning. M4
 producerar samtliga siffror.
+
+---
+
+## Tillägg O — endast hög 1 och hög 2 är parade — 2026-08-24
+
+Besluten nedan fattades **2026-08-24**, efter commit 14c71eb och före första
+skarpa körningen.
+
+### O1 — Vad som mättes
+
+Den skarpa körningen kördes men commitades inte. Granskningen av utfallet visade:
+
+```
+hög1 mot hög2   0 av 1000 parade poster har olika sträng
+hög1 mot hög3   997 av 1000 har olika sträng
+
+plant-0001   hög1 'Ivarsson'      ->  hög3 'Mark'
+plant-0003   hög1 '193302276873'  ->  hög3 '196504112037'
+plant-0008   hög1 '0778202759'    ->  hög3 '0765657288'
+```
+
+### O2 — plant_id är ett löpnummer per hög
+
+plant_id tilldelas som ett löpnummer inom den hög som genereras. plant-0001
+betyder första planterade uppgiften i den högen, och ingenting mer.
+
+Räckvidden är alltså EN hög. Nyckeln är inte global och har aldrig varit det.
+
+Två högar som delar plantering får därför samma id på samma uppgift — hög 2 är
+hög 1 med skada pålagd, samma dragning, samma strängar. Två högar som INTE delar
+plantering får samma id-serie utan att någon post motsvarar någon annan.
+
+Formuleringen i Tillägg L, att plant_id sätts före all högbehandling, beskriver
+tidpunkten och inte räckvidden. Den kan läsas som att id:t föregår högarna och
+därför är gemensamt för dem. Det gör det inte, och det var den läsningen som fick
+I3 att dra slutsatsen att alla tre högarna var parade.
+
+Detta är orsaken till tabellen i O1: plant-0001 är Ivarsson i hög 1 och Mark i
+hög 3 därför att id:t räknas per hög, inte därför att genereringen är felaktig.
+
+### O3 — Tillägg I3 var fel
+
+I3 angav att alla tre högarna är parvis parade. Det gäller bara paret 1 och 2.
+
+I3 byggde på observationen att högarna genereras ur samma seedade ström och
+avviker först där högens egen behandling slår till. Det stämmer för hög 2, som
+är hög 1 med skada pålagd. Hög 3 har en egen korpus med egen dragning, vilket
+redan syntes i I3:s egen mätning: hög 1 och hög 3 delade inga dokument.
+Slutsatsen om parning drogs ändå för alla tre.
+
+### O4 — Gällande
+
+Parad differens beräknas och redovisas endast för hög 1 mot hög 2.
+
+Jämförelser mot hög 3 redovisas inte som differenser. Hög 3 redovisas med sina
+egna marginaler och Wilson-intervall, och med överflaggning enligt L6.
+
+### O5 — Vad som bröts och vad som inte gjorde det
+
+Punktskattningen δ är skillnaden mellan de två högarnas marginella
+missfrekvenser, och den är korrekt oavsett hur posterna paras ihop.
+
+Det som bryts är intervallet. Tango förutsätter att paren är verkliga. Med en
+falsk parning blir båda diskordanta cellerna uppblåsta och intervallet blir
+bredare än det ska.
+
+Talen var alltså inte falska. Metoden var det: de presenterades som parade när
+de inte var det.
+
+### O6 — Varför inte en metod för oberoende stickprov
+
+Alternativet var att införa ett intervall för skillnaden mellan oberoende
+proportioner för jämförelserna mot hög 3. Det valdes bort: det kräver ny kod,
+en ny referensfixtur och nya tester, och tiden till onsdag 26 augusti räcker
+inte när den publicerade sidan och den statiska reserven inte är påbörjade.
+
+Hög 3:s bidrag till mätningen ligger i överflaggningen, som redovisas separat
+och inte berörs av detta.

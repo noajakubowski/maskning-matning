@@ -27,7 +27,7 @@ här, med hänvisning till tillägget.
 | Kollisionslista | 32 ord, `generator/kollisionslista.md` | Tillägg G | 26 ord i Tillägg F |
 | Årsled tolvsiffriga personnummer | 1900 till innevarande år | Tillägg I | 19xx eller 20xx jämnt fördelat i Tillägg H |
 | Skiftläge vid plantering | inledande versal per segment | Tillägg H | ospecificerat tidigare |
-| Parad jämförelse mellan högar | alla tre högarna parvis parade | Tillägg I | hög 1 mot hög 2 i Tillägg H |
+| Parad jämförelse mellan högar | endast hög 1 mot hög 2; hög 3 har egen korpus och egen dragning, och delar varken dokument eller planterade värden med de andra | Tillägg O | alla tre högarna parvis parade i Tillägg I |
 | Mallplatser | lämnas aldrig tomma; mall väljs bara när kvot finns kvar för varje typ den har platshållare för | Tillägg I | ospecificerat tidigare |
 | Undertyp för telefonnummer | med skiljetecken, utan skiljetecken, internationellt | kontraktsrättelse före M2 | understrecksformerna |
 | Flaggans struktur | bär aldrig undertyp för personnummer och telefon | byggspec, M2-avsnittet | ospecificerat tidigare |
@@ -36,15 +36,15 @@ här, med hänvisning till tillägget.
 | Typförväxling | eget mått, redovisas per riktning, aldrig som miss eller överflaggning; redovisas fullt ut för alla typer där den kan uppstå; nedtoningen avser bara jämförelsen mellan de tre mätuppsättningarna | Tillägg J och K | ospecificerat tidigare |
 | Överflaggning | tecken utanför samtliga facitspann oavsett typ | Tillägg J | per typ i Tillägg E |
 | Överflaggningens nämnare | högens totala teckenantal | Tillägg K | ospecificerat tidigare |
-| Parningsnyckel | plant_id, satt av generatorn före högbehandling | Tillägg L | dokument-id och startposition i K |
+| Parningsnyckel | plant_id; räckvidd inom EN hög, löpnummer per hög; parning giltig endast mellan högar som delar plantering, alltså hög 1 och hög 2 | Tillägg L och O | dokument-id och startposition i K |
 | Saknat plant_id | stoppar körningen med felkod | Tillägg L | uteslutningsregeln i K |
-| Parad differens | Tango score-intervall, 95 %, δ = (n01−n10)/n | Tillägg L | McNemar med Wilson i K |
+| Parad differens | endast hög 1 mot hög 2; Tango score-intervall, 95 %, δ = (n01−n10)/n | Tillägg O | varje par av högar i Tillägg I och K |
 | Hypotestest | ingår inte; n01, n10 och n01+n10 redovisas | Tillägg L | McNemar i K |
 | Delvis träff | räknas som miss i binära beräkningar, redovisas alltid som egen kolumn | Tillägg L | ospecificerat tidigare |
 | Överflaggningens osäkerhet | klusterbootstrap på dokument, B = 10 000, percentilintervall; antal spann redovisas | Tillägg L | punktvärde utan intervall i K |
 | Kvotmotiveringens precision | talen i kvotmotiveringen avser ett aggregat som inte får redovisas; varje redovisad siffra bär sitt eget Wilson-intervall | Tillägg L | normalapproximationen i grunddokumentet |
 | Hög 1, namn | implementationsverifiering, inte empiri; jämförelsen omfattar endast namndelar utan bindestreck, antalet uteslutna redovisas | Tillägg L och M | ospecificerat tidigare |
-| plant_id | tilldelas vid plantering, före all högbehandling | Tillägg L | ospecificerat tidigare |
+| plant_id | löpnummer inom den hög som genereras; tilldelas vid plantering, före korruption; inte en global identitet | Tillägg L och O | ospecificerat tidigare |
 | Tillägg D | existerar inte; hänvisningar avser Tillägg E | Tillägg L | ospecificerat tidigare |
 | M3 regelmotor | utgår ur version ett | Tillägg N | "byggs" i grunddokumentet |
 

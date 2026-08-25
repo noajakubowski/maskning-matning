@@ -29,7 +29,23 @@ function paraFacit(facitA, facitB) {
   const idsB = new Set(mapB.keys());
 
   const gemensamma = [...idsA].filter((id) => idsB.has(id)).sort();
-  const par = gemensamma.map((id) => ({ a: mapA.get(id), b: mapB.get(id) }));
+  const par = [];
+  for (const id of gemensamma) {
+    const a = mapA.get(id);
+    const b = mapB.get(id);
+    // plant_id är ett löpnummer per hög. Två högar som inte delar plantering
+    // får poster med samma plant_id men olika innehåll, och parningen kopplar då
+    // ihop orelaterade uppgifter utan att det syns i talen.
+    if (a['ursprunglig sträng'] !== b['ursprunglig sträng']) {
+      console.error('BRIST: parning — ' + id + ': '
+        + JSON.stringify(a['ursprunglig sträng']) + ' ≠ '
+        + JSON.stringify(b['ursprunglig sträng']));
+      const err = new Error('parning: ' + id + ' har olika ursprunglig sträng i de två högar');
+      err.kod = 1;
+      throw err;
+    }
+    par.push({ a, b });
+  }
 
   return {
     par,

@@ -234,6 +234,81 @@ function testPlantIdParning() {
   else console.log('OK  parning på plant_id ger 1000 av 1000');
 }
 
+function lasGeneratorData() {
+  const namnpoolPath = path.join(repo, 'generator/namn/namnpool.json');
+  if (!fs.existsSync(namnpoolPath)) return null;
+  const { genereraHog } = require(path.join(repo, 'generator/index.js'));
+  const { valjMallar } = require(path.join(repo, 'generator/mallar.js'));
+  const { skapaSlump } = require(path.join(repo, 'generator/slump.js'));
+  const namnpool = JSON.parse(fs.readFileSync(namnpoolPath, 'utf8'));
+  const koll = fs.readFileSync(path.join(repo, 'generator/kollisionslista.md'), 'utf8')
+    .split('\n')
+    .filter((l) => /^\| [A-ZÅÄÖ]/.test(l))
+    .map((l) => ({ ord: l.split('|')[1].trim() }));
+  const mallar = valjMallar(skapaSlump('m4-o-test'));
+  return { genereraHog, namnpool, kollisionsord: koll, mallar };
+}
+
+function testParadeSammaStrang() {
+  const data = lasGeneratorData();
+  if (!data) {
+    fail('Saknar namnpool.json för parade-strängtest');
+    return;
+  }
+  const { genereraHog, namnpool, mallar } = data;
+  const seed = 'm4-strang-test';
+  const hog1 = genereraHog({ seed, hogtyp: 1, namnpool, kollisionsord: [], mallar });
+  const hog2 = genereraHog({ seed, hogtyp: 2, namnpool, kollisionsord: [], mallar });
+  const par = paraFacit(hog1.facit, hog2.facit);
+  console.log(`Granskade ${par.antalPar} parade poster hög 1 mot hög 2`);
+  if (par.antalPar === 0) {
+    fail('noll parade poster hög 1 mot hög 2');
+    return;
+  }
+  for (const p of par.par) {
+    if (p.a['ursprunglig sträng'] !== p.b['ursprunglig sträng']) {
+      fail(`parad post ${p.a.plant_id} har olika ursprunglig sträng`);
+      return;
+    }
+  }
+  console.log('OK  parade poster hög 1 mot hög 2 har identisk ursprunglig sträng');
+}
+
+function testParningSparrFelStrang() {
+  // Talen från en falsk parning ser rimliga ut. Punktskattningen är korrekt,
+  // intervallet är bara för brett, och ingenting i utskriften avslöjar det.
+  const facitA = [{ plant_id: 'plant-0001', 'ursprunglig sträng': 'A' }];
+  const facitB = [{ plant_id: 'plant-0001', 'ursprunglig sträng': 'B' }];
+  try {
+    paraFacit(facitA, facitB);
+    fail('spärr: borde kasta vid olika ursprunglig sträng');
+    return;
+  } catch (err) {
+    if (!err.kod) {
+      fail('spärr: saknar felkod');
+      return;
+    }
+  }
+
+  const data = lasGeneratorData();
+  if (!data) {
+    fail('Saknar namnpool.json för spärrtest hög 1 mot 3');
+    return;
+  }
+  const { genereraHog, namnpool, kollisionsord, mallar } = data;
+  const seed = 'm4-sparr-test';
+  const hog1 = genereraHog({ seed, hogtyp: 1, namnpool, kollisionsord: [], mallar });
+  const hog3 = genereraHog({ seed, hogtyp: 3, namnpool, kollisionsord, mallar });
+  try {
+    paraFacit(hog1.facit, hog3.facit);
+    fail('spärr: hög 1 mot hög 3 borde kasta');
+  } catch (err) {
+    if (!err.kod) fail('spärr: hög 1 mot 3 saknar felkod');
+    else console.log('OK  spärr fäller på hög 1 mot hög 3');
+  }
+  console.log('OK  spärr fäller på olika ursprunglig sträng');
+}
+
 function testDeltaTecken() {
   const facit = [
     {
@@ -525,6 +600,8 @@ testDeltaTecken();
 testDeltaKontrollrakning();
 testTypEtiketter();
 testPlantIdParning();
+testParadeSammaStrang();
+testParningSparrFelStrang();
 testUtskriftAntal();
 
 if (fel) process.exit(1);

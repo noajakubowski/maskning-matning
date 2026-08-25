@@ -180,11 +180,11 @@ function paradDifferens(hogA, hogB, uppsattning) {
 function matAlla(hogar) {
   const perHog = hogar.map((h) => matHog(h));
   const parvis = [];
-  for (let i = 0; i < hogar.length; i++) {
-    for (let j = i + 1; j < hogar.length; j++) {
-      for (const upp of MATUPPSATTNINGAR) {
-        parvis.push(paradDifferens(hogar[i], hogar[j], upp));
-      }
+  const hog1 = hogar.find((h) => h.hogtyp === 1);
+  const hog2 = hogar.find((h) => h.hogtyp === 2);
+  if (hog1 && hog2) {
+    for (const upp of MATUPPSATTNINGAR) {
+      parvis.push(paradDifferens(hog1, hog2, upp));
     }
   }
   return { perHog, parvis };
