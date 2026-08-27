@@ -1,5 +1,28 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+
+function lasFodelsearIntervall() {
+  const fil = path.join(__dirname, '..', 'docs/gallande-varden.md');
+  const rader = fs.readFileSync(fil, 'utf8').split('\n');
+  let min = null;
+  let max = null;
+  for (const rad of rader) {
+    if (!rad.includes('|')) continue;
+    const m = rad.match(/\| ([^|]+?) \| (\d+) \|/);
+    if (!m) continue;
+    const etikett = m[1].trim().normalize('NFC').toLowerCase();
+    const antal = parseInt(m[2], 10);
+    if (etikett === 'födelseår, min') min = antal;
+    else if (etikett === 'födelseår, max') max = antal;
+  }
+  if (min === null || max === null) {
+    throw new Error('Saknar födelseårsintervall i gallande-varden.md');
+  }
+  return { min, max };
+}
+
 function svenskKontrollsiffra(nioSiffror) {
   if (!/^\d{9}$/.test(nioSiffror)) throw new Error('Kontrollsiffra kräver 9 siffror');
   let summa = 0;
@@ -44,8 +67,10 @@ function personnummer(slump, langdform, medBindestreck) {
     datumDel = arKort + kort;
     tioForCheck = arKort + kort + lop;
   } else {
-    const innevarandeAr = new Date().getFullYear();
-    const arLang = String(slump.heltal(1900, innevarandeAr));
+    // Systemklockan får inte styra födelseår: samma frö ska ge identisk korpus
+    // oavsett när genereringen körs.
+    const { min, max } = lasFodelsearIntervall();
+    const arLang = String(slump.heltal(min, max));
     const arKort = arLang.slice(2);
     const lop = String(slump.heltal(0, 999)).padStart(3, '0');
     datumDel = arLang + kort;

@@ -5,9 +5,9 @@ personuppgifter i myndighetsdokument. Alla metodval som påverkar mätresultatet
 låstes i git innan den första skarpa körningen gjordes; commit-historiken är
 beviset för den ordningen.
 
-Siffrorna från mätningen står i [`docs/gallande-varden.md`](docs/gallande-varden.md),
-under avsnitten om överflaggning och i tabellen över gällande värden. Metodval
-och låsningar finns i [`docs/forhandsregistrering.md`](docs/forhandsregistrering.md).
+Siffrorna från mätningen står i [`docs/resultat.md`](docs/resultat.md), som skrivs
+i samma commit som den skarpa körningen. Metodval och låsningar finns i
+[`docs/forhandsregistrering.md`](docs/forhandsregistrering.md).
 
 # maskning-matning
 

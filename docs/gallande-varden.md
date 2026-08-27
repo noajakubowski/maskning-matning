@@ -88,22 +88,99 @@ särskiljas från den.
 Överflaggningen är högre i hög tre än i hög ett, men skillnaden kan inte
 tillskrivas kollisionsorden. Korpusarna skiljer sig åt, och Tillägg O förbjuder
 parad jämförelse mellan högar som inte delar samma plantering. Talen för
-respektive hög står i avsnittet om överflaggning.
+respektive hög står i [`docs/resultat.md`](docs/resultat.md), som skrivs i samma
+commit som den skarpa körningen.
 
 Att kunna säga hur mycket av överflaggningen som kommer från kollisionsordens
 vanliga ord hade krävt att varje överflaggat spann märktes med om strängen finns
 i kollisionslistan. Det är inte byggt — tiden räckte inte.
 
+Kollisionsordsposterna utgörs av ett fast antal ord med upprepade förekomster.
+Urvalet är handskrivet och dras inte på fröet. Ett ord träffas eller missas i
+alla sina förekomster samtidigt. Därför redovisas de som antal ord, inte som
+andel med konfidensintervall. Samma invändning gäller i mycket svagare grad för
+vanliga namn, där upprepningen är låg.
+
+Substitutionsskadan träffar endast tecken som finns i OCR-tabellen; övriga
+tecken kan inte skadas av substitution. Uppgifter som saknar kandidattecken byter
+korruptionstyp, vilket förskjuter den redovisade typfördelningen; antalet skrivs
+ut vid varje generering.
+
 ## Förkastad körning — skarp-2026-08-24
 
-Körningen på fröet skarp-2026-08-24 gjordes innan M4:s utskriftsfel var rättat.
-Felet var att utskriften redovisade färre poster än facit innehöll, eftersom
-blockordningen byggde på en hårdkodad lista som saknade en undertyp. Själva
-beräkningen var korrekt; redovisningen var det inte.
+Körningen gjordes före utskriftsrättningen och förkastas i sin helhet. Den är
+inte frusen och inga värden ur den gäller.
 
-Körningen förkastas i sin helhet. Den är inte frusen och inga värden ur den
-gäller. En ny skarp körning görs på rättad kod; frö anges i den körningens
-resultat.
+Felet låg helt i redovisningen: blockordningen byggde på en hårdkodad lista som
+saknade en undertyp, så utskriften redovisade färre poster än facit innehöll.
+Beräkningen rördes inte.
+
+Omkörningen sker på samma låsta frö som redan står i [`docs/fro.md`](docs/fro.md):
+skarp-2026-08-24. Ett frö valt efter att siffror setts går inte att försvara;
+ett frö låst i egen commit före resultaten gör det. [`docs/fro.md`](docs/fro.md)
+upphävs därför inte.
 
 Rättningen är verifierad genom att en post medvetet tappades i koden, varpå
 avstämningsspärren avbröt körningen med felkod och namngav det saknade blocket.
+
+## Dokumentstruktur och diarienummer
+
+Beslutsdokument följer avsnitten rubrik, formalia, bakgrund, skäl och beslut.
+Formalia är det enda avsnitt där personuppgifter planteras. Bakgrund, skäl och
+beslut innehåller brödtext utan personuppgifter.
+
+| Beslut, meningar i bakgrund | 5 | Dokumentstruktur och diarienummer |
+| Beslut, meningar i skäl | 5 | Dokumentstruktur och diarienummer |
+| Beslut, meningar i beslut | 3 | Dokumentstruktur och diarienummer |
+
+Antalen valdes för att ge brödtext utan personuppgifter, eftersom överflaggning
+annars mäts i ett gynnsamt fall där nästan all text bär planterade uppgifter.
+
+Diarienummer skrivs som årtal och löpnummer med snedstreck. Bindestreck liknar
+personnummer i tecken och längd och hade blivit lockbete för mönsterdetektorn;
+det är en mätning värd att göra men inte förhandsregistrerad i denna version.
+
+Diarienummer och beslutsdatum är dekoration. De är inte personuppgifter och står
+inte i facit.
+
+## Dokumentform v2
+
+Beslutsdokument börjar med rubrik, diarienummer och beslutsdatum på egna rader
+före formalia. Formalia är det enda avsnitt där personuppgifter planteras.
+Diarienummer och beslutsdatum förekommer inte i ansökan eller tjänsteanteckning.
+
+Ansökan har avsnitten rubrik, med uppgifter och ÄRENDET. Tjänsteanteckning har
+rubrik med datum, med uppgifter och ANTECKNING. Inom varje avsnitt skiljs
+meningar med enkel radbrytning; dubbel radbrytning används endast mellan
+avsnitt.
+
+Ett beslutsdokument har en sökande: exakt en namndel, ett personnummer och ett
+telefonnummer i formalia. Antalet beslutsdokument är min(namn, personnummer,
+telefonnummer); resterande uppgifter fördelas på ansökan och tjänsteanteckning.
+
+Brödtextmeningar väljs utan återanvändning inom samma avsnitt via blandning av
+meningpoolen.
+
+| Ansökan, meningar i ärendet | 4 | Dokumentform v2 |
+| Tjänsteanteckning, meningar i anteckning | 3 | Dokumentform v2 |
+| Beslut, meningar i bakgrund | 5 | Dokumentform v2 |
+| Beslut, meningar i skäl | 5 | Dokumentform v2 |
+| Beslut, meningar i beslut | 3 | Dokumentform v2 |
+
+## Beslutsår
+
+Diarienummer och beslutsdatum drar årtal från ett fast intervall. Systemklockan
+får aldrig användas — korpusen ska gå att återskapa med samma frö oavsett när
+genereringen körs.
+
+| Beslutsår, min | 2015 | Beslutsår |
+| Beslutsår, max | 2024 | Beslutsår |
+
+## Födelseår
+
+Tolvsiffriga personnummer drar födelseår från ett fast intervall. Systemklockan
+används inte någonstans i generatorn — korpusen ska gå att återskapa med samma
+frö oavsett när genereringen körs.
+
+| Födelseår, min | 1915 | Födelseår |
+| Födelseår, max | 2024 | Födelseår |

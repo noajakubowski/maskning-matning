@@ -14,7 +14,7 @@ const {
 } = require('../matning/intervall.js');
 const { matUppsattning, unionFlaggor } = require('../matning/matchning.js');
 const { paraFacit, kravPlantId, arMiss } = require('../matning/parning.js');
-const { matAlla, formatUtskrift, MATUPPSATTNINGAR, paradDifferens, typEtikett, matHog } = require('../matning/index.js');
+const { matAlla, formatUtskrift, MATUPPSATTNINGAR, paradDifferens, typEtikett, matHog, byggKollisionsordRader, byggTypRader, kravFacitPerPostLangd } = require('../matning/index.js');
 
 const repo = path.resolve(__dirname, '..');
 let fel = 0;
@@ -570,6 +570,115 @@ function testHog3AllaUndertyper() {
   }
 }
 
+function kollisionsordPost(ord, plantId) {
+  return {
+    plant_id: plantId,
+    'dokument-id': 'doc-0001',
+    typ: 'personnamn',
+    'undertyp eller ark': 'kollisionsord',
+    startposition: 10,
+    slutposition: 20,
+    'ursprunglig sträng': ord,
+  };
+}
+
+function tomPerPost(klass) {
+  return {
+    klass,
+    typforvaxling: {
+      personnummer_som_telefonnummer: 0,
+      telefonnummer_som_personnummer: 0,
+      personnamn_som_annat: 0,
+    },
+    overlapping: 0,
+  };
+}
+
+function testFacitPerPostLangd() {
+  try {
+    byggTypRader(
+      [{ typ: 'personnummer', 'undertyp eller ark': 'tiosiffriga' }],
+      [{ typ: 'personnummer', undertyp: 'tiosiffriga', full: 1, delvis: 0, miss: 0,
+        typforvaxling: { personnummer_som_telefonnummer: 0, telefonnummer_som_personnummer: 0, personnamn_som_annat: 0 },
+        poster: 1 }],
+      [],
+    );
+    fail('olika längd facit/perPost borde kasta');
+  } catch (err) {
+    if (!err.kod) fail('längdkontroll saknar felkod');
+    else console.log('OK  facit och perPost måste ha samma längd');
+  }
+}
+
+function testKollisionsordDelvisSomMiss() {
+  const facit = [
+    kollisionsordPost('Ord', 'plant-0001'),
+    kollisionsordPost('Ord', 'plant-0002'),
+  ];
+  const perPost = [tomPerPost('delvis'), tomPerPost('delvis')];
+  const rader = byggKollisionsordRader(facit, perPost).map((r) => r.text);
+  console.log(`Granskade ${rader.length} rader i kollisionsordsblock`);
+  if (rader.length === 0) fail('kollisionsordsblock tomt');
+  const helMiss = rader.find((r) => r.startsWith('ord där samtliga förekomster missades:'));
+  const delvis = rader.find((r) => r.startsWith('delvis:'));
+  const forekomster = rader.find((r) => r.startsWith('förekomster:'));
+  if (!helMiss || !helMiss.includes('1 av 1')) fail('delvis räknades inte som fullständig miss per ord');
+  else if (!delvis || !delvis.includes('2 av 2')) fail('delvis-rad saknas eller fel');
+  else if (!forekomster || !forekomster.includes('2 missade av 2')) fail('delvis räknades inte som miss');
+  else console.log('OK  delvis räknas som miss i kollisionsordsblocket');
+}
+
+function testKollisionsordSpriddTraffSparr() {
+  const facit = [
+    kollisionsordPost('Ord', 'plant-0001'),
+    kollisionsordPost('Ord', 'plant-0002'),
+  ];
+  const perPost = [tomPerPost('full'), tomPerPost('miss')];
+  try {
+    byggKollisionsordRader(facit, perPost);
+    fail('spridd träff borde kasta');
+  } catch (err) {
+    if (!err.kod) fail('spridd träff saknar felkod');
+    else console.log('OK  spridd träff avbryter med felkod');
+  }
+}
+
+function testKollisionsordNRealHog3() {
+  // testUtskriftAntal kör på syntetisk fixtur utan kollisionsordsblock och kan
+  // därför aldrig fälla på det som verkligen skrivs ut.
+  const data = lasGeneratorData();
+  if (!data) {
+    fail('Saknar namnpool.json för kollisionsord n=-test');
+    return;
+  }
+  const { genereraHog, namnpool, kollisionsord, mallar } = data;
+  const seed = 'm4-koll-n';
+  const hog3 = genereraHog({ seed, hogtyp: 3, namnpool, kollisionsord, mallar });
+  const hog = byggMiniHog(seed, 3, hog3.facit, [], []);
+  const ut = formatUtskrift({ perHog: [matHog(hog)], parvis: [] });
+  const rader = ut.split('\n');
+  const rubrik = typEtikett('personnamn', 'kollisionsord');
+  const i = rader.findIndex((r) => r.includes(rubrik));
+  if (i < 0) {
+    fail('saknar kollisionsordsblock i hög 3-utskrift');
+    return;
+  }
+  const block = [];
+  for (let k = i + 1; k < rader.length; k++) {
+    const rad = rader[k];
+    if (rad.trim() === '' || (rad.includes(' / ') && !rad.startsWith('  '))) break;
+    if (!rad.startsWith('  ')) break;
+    if (rad.includes(' / ')) break;
+    block.push(rad.trim());
+  }
+  console.log(`Granskade ${block.length} rader i kollisionsordsblock (hög 3)`);
+  if (block.length === 0) fail('tomt kollisionsordsblock');
+  const utanN = block.filter((r) => !/\bn=\d+/.test(r) && !r.startsWith('urvalet'));
+  if (utanN.length) fail(`kollisionsord utan n=: ${utanN.join(' | ')}`);
+  else if (!block.some((r) => r.startsWith('delvis:'))) fail('saknar delvis-rad');
+  else console.log('OK  kollisionsordsblock har n= och delvis-rad (hög 3)');
+}
+
 function testUtskriftAntal() {
   const rader = formatUtskrift({
     perHog: [{
@@ -633,6 +742,10 @@ testDeltaTecken();
 testDeltaKontrollrakning();
 testTypEtiketter();
 testHog3AllaUndertyper();
+testFacitPerPostLangd();
+testKollisionsordDelvisSomMiss();
+testKollisionsordSpriddTraffSparr();
+testKollisionsordNRealHog3();
 testPlantIdParning();
 testParadeSammaStrang();
 testParningSparrFelStrang();

@@ -2,7 +2,7 @@
 
 const { wilson95, tango95, klusterbootstrapKvot } = require('./intervall.js');
 const { matUppsattning, unionFlaggor } = require('./matchning.js');
-const { paraFacit, paradMissDiff } = require('./parning.js');
+const { paraFacit, paradMissDiff, arMiss } = require('./parning.js');
 
 const MATUPPSATTNINGAR = ['monster', 'lexikon', 'union'];
 
@@ -69,7 +69,18 @@ function byggBlockOrdning(perTyp) {
   return ordning;
 }
 
-function byggTypRader(perTyp) {
+function kravFacitPerPostLangd(facit, perPost) {
+  if (facit.length !== perPost.length) {
+    console.error('BRIST: facit och perPost har olika längd: ' + facit.length + ' mot '
+      + perPost.length);
+    const err = new Error('facit och perPost har olika längd');
+    err.kod = 1;
+    throw err;
+  }
+}
+
+function byggTypRader(facit, perTyp, perPost) {
+  kravFacitPerPostLangd(facit, perPost);
   const map = new Map(perTyp.map((r) => [typNyckel(r.typ, r.undertyp), r]));
   const ordning = byggBlockOrdning(perTyp);
   const rader = [];
@@ -82,15 +93,19 @@ function byggTypRader(perTyp) {
     redovisade += n;
     skrivnaNycklar.add(typNyckel(typ, undertyp));
     rader.push({ rubrik: typEtikett(typ, undertyp) });
-    rader.push(wilsonRad('full träff', rad.full, n));
-    rader.push(wilsonRad('delvis', rad.delvis, n));
-    rader.push(wilsonRad('miss', rad.miss, n));
-    for (const nyckel of TYPFORVAXLING_RIKTNINGAR[typ] || []) {
-      rader.push(wilsonRad(
-        TYPFORVAXLING_ETIKETTER[nyckel],
-        rad.typforvaxling[nyckel],
-        n,
-      ));
+    if (arKollisionsord(typ, undertyp)) {
+      rader.push(...byggKollisionsordRader(facit, perPost));
+    } else {
+      rader.push(wilsonRad('full träff', rad.full, n));
+      rader.push(wilsonRad('delvis', rad.delvis, n));
+      rader.push(wilsonRad('miss', rad.miss, n));
+      for (const nyckel of TYPFORVAXLING_RIKTNINGAR[typ] || []) {
+        rader.push(wilsonRad(
+          TYPFORVAXLING_ETIKETTER[nyckel],
+          rad.typforvaxling[nyckel],
+          n,
+        ));
+      }
     }
   }
   return { rader, redovisade, skrivnaNycklar };
@@ -140,6 +155,72 @@ function wilsonRad(namn, antal, total) {
   };
 }
 
+function enkelRad(text) {
+  return { text };
+}
+
+// Posterna är ett fast antal ord som var och ett planteras flera gånger, urvalet
+// dras inte på fröet, och ett ord träffas eller missas i alla sina förekomster
+// samtidigt. Wilson förutsätter oberoende försök. De finns inte här.
+function byggKollisionsordRader(facit, perPost) {
+  kravFacitPerPostLangd(facit, perPost);
+  const ordMap = new Map();
+  for (let i = 0; i < facit.length; i++) {
+    const post = facit[i];
+    if (post.typ !== 'personnamn' || post['undertyp eller ark'] !== 'kollisionsord') continue;
+    const ord = post['ursprunglig sträng'];
+    if (!ordMap.has(ord)) ordMap.set(ord, []);
+    ordMap.get(ord).push(perPost[i].klass);
+  }
+
+  let ordHelMiss = 0;
+  let totalForekomster = 0;
+  let missadeForekomster = 0;
+  let delvisForekomster = 0;
+  const rader = [];
+
+  for (const [ord, klasser] of ordMap) {
+    totalForekomster += klasser.length;
+    let traffade = 0;
+    let missade = 0;
+    for (const klass of klasser) {
+      if (klass === 'delvis') delvisForekomster++;
+      if (arMiss(klass)) {
+        missade++;
+        missadeForekomster++;
+      } else {
+        traffade++;
+      }
+    }
+    if (missade === klasser.length) ordHelMiss++;
+    if (traffade > 0 && missade > 0) {
+      // "delvis träffat" i Tillägg L avser partiell spannöverlappning inom en post.
+      // Här är samma ord full träff i en förekomst och miss i en annan — spridd träff.
+      console.error('BRIST: kollisionsord spridd träff — ' + ord + ': ' + traffade
+        + ' träffade förekomster, ' + missade + ' missade förekomster');
+      const err = new Error('kollisionsord spridd träff: ' + ord);
+      err.kod = 1;
+      throw err;
+    }
+  }
+
+  const unikaOrd = ordMap.size;
+  rader.push(enkelRad('unika kollisionsord planterade: ' + unikaOrd + ' (n=' + unikaOrd + ')'));
+  rader.push(enkelRad('ord där samtliga förekomster missades: ' + ordHelMiss + ' av '
+    + unikaOrd + ' (n=' + unikaOrd + ')'));
+  rader.push(enkelRad('delvis: ' + delvisForekomster + ' av ' + totalForekomster
+    + ' (n=' + totalForekomster + ')'));
+  rader.push(enkelRad('förekomster: ' + missadeForekomster + ' missade av ' + totalForekomster
+    + ' totalt (n=' + totalForekomster + ')'));
+  // Anmärkning om urval, inte ett mätvärde — n= är inte meningsfullt här.
+  rader.push(enkelRad('urvalet är fast och dras inte på fröet'));
+  return rader;
+}
+
+function arKollisionsord(typ, undertyp) {
+  return typ === 'personnamn' && undertyp === 'kollisionsord';
+}
+
 function matHog(hog) {
   const ut = {
     seed: hog.seed,
@@ -152,7 +233,7 @@ function matHog(hog) {
   for (const upp of MATUPPSATTNINGAR) {
     const flaggor = valjFlaggor(upp, hog.flaggorMonster, hog.flaggorLexikon);
     const r = matUppsattning(hog.facit, hog.dokument, flaggor);
-    const { rader, redovisade, skrivnaNycklar } = byggTypRader(r.perTyp);
+    const { rader, redovisade, skrivnaNycklar } = byggTypRader(hog.facit, r.perTyp, r.perPost);
     if (upp === 'monster') {
       kontrolleraAvstamning(hog.facit, redovisade, skrivnaNycklar);
       ut.redovisadePoster = redovisade;
@@ -297,4 +378,6 @@ module.exports = {
   typEtikett,
   byggBlockOrdning,
   byggTypRader,
+  byggKollisionsordRader,
+  kravFacitPerPostLangd,
 };
