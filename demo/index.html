@@ -332,6 +332,9 @@
       font-size: 0.7rem;
       color: var(--muted);
     }
+    .natverk-kalla .status[hidden] {
+      display: none;
+    }
     .natverk-not {
       margin: 0;
       font-size: 0.6rem;
@@ -363,6 +366,16 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    #lista-matare li {
+      padding-left: 0.8em;
+    }
+    #lista-matare li.matare-under {
+      padding-left: 0;
+      font-family: inherit;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--muted);
     }
     .natverk-ordagrant {
       flex-shrink: 0;
@@ -451,9 +464,12 @@
       </div>
       <div class="natverk-kalla">
         <h3>Webbläsarens egen mätning</h3>
-        <p id="matare-status" class="status">inga anrop sedan sidan laddades</p>
-        <ul id="lista-matare"></ul>
         <p class="natverk-not">Sidan kan inte skriva till den här listan.</p>
+        <p id="matare-status" class="status">inga anrop sedan sidan laddades</p>
+        <ul id="lista-matare">
+          <li class="matare-under" id="matare-vid">vid sidladdning</li>
+          <li class="matare-under" id="matare-efter">efter sidladdning</li>
+        </ul>
       </div>
       <div class="natverk-kalla">
         <h3>Sidans egna försök</h3>
@@ -461,8 +477,8 @@
         <ul id="lista-forsok"></ul>
         <p id="forsok-forbehall" class="natverk-not" hidden>Webbläsaren stoppade anropet innan det gick ut på nätet. Då finns det ingenting för den övre mätningen att registrera.</p>
       </div>
-      <p class="natverk-ordagrant">Övre listan är webbläsarens egen räkning av allt sidan hämtar. Den har inte rört sig sedan sidan laddades, trots att datorn är uppkopplad.</p>
-      <p class="natverk-ordagrant">Tryck på knappen så gör sidan en ansats — då syns skillnaden mot listan som stått still medan du bläddrat och verktyget arbetat.</p>
+      <p class="natverk-ordagrant">Övre listan är webbläsarens egen räkning av allt sidan hämtar. Den fylldes när sidan öppnades och har inte rört sig sedan dess — inte när du bläddrat, inte när verktyget arbetat.</p>
+      <p class="natverk-ordagrant">Tryck på knappen så gör sidan en ansats — då syns skillnaden mot listan som stått still.</p>
     </section>
   </main>
 
@@ -823,6 +839,10 @@
       });
 
       var matareAntal = 0;
+      var laddningGrans = null;
+      var matareKo = [];
+      var senastForsokAdress = '';
+      var forsokGjort = false;
       function pad2(n) {
         return (n < 10 ? '0' : '') + n;
       }
@@ -835,15 +855,61 @@
         var d = new Date();
         return pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
       }
+      function filnamnFranUrl(url) {
+        var s = String(url);
+        var i = s.indexOf('?');
+        if (i >= 0) s = s.slice(0, i);
+        i = s.indexOf('#');
+        if (i >= 0) s = s.slice(0, i);
+        i = s.lastIndexOf('/');
+        if (i >= 0) s = s.slice(i + 1);
+        return s;
+      }
+      function markeraLaddningKlar() {
+        if (laddningGrans !== null) return;
+        var nav = performance.getEntriesByType('navigation')[0];
+        laddningGrans = (nav && typeof nav.loadEventEnd === 'number' && nav.loadEventEnd > 0)
+          ? nav.loadEventEnd
+          : performance.now();
+        var ko = matareKo;
+        matareKo = [];
+        var i;
+        for (i = 0; i < ko.length; i++) laggMatareFranObservator(ko[i]);
+      }
+      function ovreFickForsoket() {
+        if (!senastForsokAdress) return false;
+        var arr = performance.getEntriesByType('resource');
+        var i;
+        for (i = 0; i < arr.length; i++) {
+          if (arr[i].name === senastForsokAdress) return true;
+        }
+        return false;
+      }
+      function uppdateraForbehall() {
+        if (!forsokGjort) {
+          document.getElementById('forsok-forbehall').hidden = true;
+          return;
+        }
+        document.getElementById('forsok-forbehall').hidden = ovreFickForsoket();
+      }
       function laggMatareFranObservator(entry) {
+        if (laddningGrans === null) {
+          matareKo.push(entry);
+          return;
+        }
         var key = entry.name + '\t' + String(entry.startTime);
         if (seddaResurser[key]) return;
         seddaResurser[key] = true;
         var li = document.createElement('li');
-        li.textContent = klockaFor(entry) + '  ' + entry.name;
+        li.textContent = klockaFor(entry) + '  ' + filnamnFranUrl(entry.name);
         document.getElementById('lista-matare').appendChild(li);
+        if (entry.startTime <= laddningGrans) {
+          var efter = document.getElementById('matare-efter');
+          efter.parentNode.insertBefore(li, efter);
+        }
         matareAntal += 1;
         document.getElementById('matare-status').hidden = true;
+        uppdateraForbehall();
       }
       function laggForsok(text) {
         document.getElementById('forsok-status').hidden = true;
@@ -867,7 +933,9 @@
         else if (/blocked|not allowed|Load failed|Failed to fetch|NetworkError/i.test(String(detalj || ''))) slag = 'blockerat';
         else slag = 'misslyckades';
         laggForsok(klockaNu() + ' · ' + kortAdress(adress) + ' · ' + slag);
-        document.getElementById('forsok-forbehall').hidden = false;
+        senastForsokAdress = adress;
+        forsokGjort = true;
+        uppdateraForbehall();
       }
       function kopplaLogg() {
         if (typeof PerformanceObserver === 'undefined') return;
@@ -892,6 +960,8 @@
       visaAnslutning();
       window.addEventListener('online', visaAnslutning);
       window.addEventListener('offline', visaAnslutning);
+      window.addEventListener('load', markeraLaddningKlar);
+      if (document.readyState === 'complete') markeraLaddningKlar();
       kopplaLogg();
       document.getElementById('testa-matare').addEventListener('click', function () { var a='https://example.invalid/matare-test'; fetch(a).then(function(r){rapporteraForsok(a,true,String(r.status));}).catch(function(e){rapporteraForsok(a,false,(e&&e.message)?e.message:String(e));}); });
 

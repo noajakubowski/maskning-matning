@@ -806,6 +806,109 @@ function testIngetTakLoggrader() {
   else console.log('OK  inget tak på antal loggrader (' + rader.length + ' rader i laggForsok, appendChild finns)');
 }
 
+function testTomtextDoljsNarListaHarRader() {
+  const html = fs.readFileSync(path.join(repo, 'demo/index.html'), 'utf8');
+  const rader = html.split('\n');
+  let granskade = 0;
+  let cssDold = 0;
+  let doldMatare = 0;
+  let doldForsok = 0;
+  for (let i = 0; i < rader.length; i++) {
+    granskade++;
+    if (rader[i].includes('.status[hidden]') && /display:\s*none/.test(rader[i] + rader[i + 1])) {
+      cssDold++;
+    }
+    if (rader[i].includes("getElementById('matare-status').hidden") && rader[i].includes('true')) {
+      doldMatare++;
+    }
+    if (rader[i].includes("getElementById('forsok-status').hidden") && rader[i].includes('true')) {
+      doldForsok++;
+    }
+  }
+  if (granskade === 0) {
+    fail('tomtext: noll rader granskade');
+    return;
+  }
+  if (!cssDold) fail('tomtext: .status[hidden] döljer inte med display:none');
+  else if (!doldMatare) fail('tomtext: matare-status döljs inte när rad läggs');
+  else if (!doldForsok) fail('tomtext: forsok-status döljs inte när rad läggs');
+  else {
+    console.log(
+      'OK  tomtext döljs när lista har rader (' +
+        granskade +
+        ' rader, css ' +
+        cssDold +
+        ', matare ' +
+        doldMatare +
+        ', forsok ' +
+        doldForsok +
+        ')',
+    );
+  }
+}
+
+function testMatareAdressKortasTillFilnamn() {
+  const html = fs.readFileSync(path.join(repo, 'demo/index.html'), 'utf8');
+  const start = html.indexOf('function laggMatareFranObservator');
+  const slut = html.indexOf('function laggForsok', start);
+  if (start < 0 || slut < 0) {
+    fail('filnamn: hittar inte laggMatareFranObservator');
+    return;
+  }
+  const fn = html.slice(start, slut);
+  const rader = fn.split('\n');
+  if (rader.length === 0) {
+    fail('filnamn: noll rader granskade');
+    return;
+  }
+  let granskade = 0;
+  let textRad = null;
+  for (let i = 0; i < rader.length; i++) {
+    granskade++;
+    if (rader[i].includes('li.textContent')) textRad = rader[i];
+  }
+  if (granskade === 0) {
+    fail('filnamn: noll rader granskade');
+    return;
+  }
+  if (!textRad) fail('filnamn: ingen textContent-rad');
+  else if (/\+\s*entry\.name/.test(textRad)) fail('filnamn: listan sätter hela adressen: ' + textRad.trim());
+  else if (!textRad.includes('filnamnFranUrl')) fail('filnamn: kortar inte till filnamn: ' + textRad.trim());
+  else console.log('OK  adresser kortas till filnamn i listan (' + granskade + ' rader i laggMatareFranObservator)');
+}
+
+function testForbehallVillkorat() {
+  const html = fs.readFileSync(path.join(repo, 'demo/index.html'), 'utf8');
+  const start = html.indexOf('function rapporteraForsok');
+  const slut = html.indexOf('function kopplaLogg', start);
+  if (start < 0 || slut < 0) {
+    fail('förbehåll-villkor: hittar inte rapporteraForsok');
+    return;
+  }
+  const fn = html.slice(start, slut);
+  const rader = fn.split('\n');
+  if (rader.length === 0) {
+    fail('förbehåll-villkor: noll rader granskade');
+    return;
+  }
+  let granskade = 0;
+  let ovillkorad = false;
+  for (let i = 0; i < rader.length; i++) {
+    granskade++;
+    if (rader[i].includes("getElementById('forsok-forbehall').hidden = false")) ovillkorad = true;
+  }
+  const villkor =
+    html.includes('function ovreFickForsoket') && html.includes('function uppdateraForbehall');
+  if (granskade === 0) {
+    fail('förbehåll-villkor: noll rader granskade');
+    return;
+  }
+  if (ovillkorad) fail('förbehåll-villkor: visas ovillkorat vid försök');
+  else if (!villkor) fail('förbehåll-villkor: saknar villkor mot övre listan');
+  else if (!fn.includes('uppdateraForbehall')) fail('förbehåll-villkor: rapporteraForsok anropar inte uppdateraForbehall');
+  else console.log('OK  förbehållet är villkorat (' + granskade + ' rader i rapporteraForsok)');
+}
+
 function main() {
   console.log('Test demo');
   testHtmlIngenNatverkskod();
@@ -831,6 +934,9 @@ function main() {
   testTalSkadaISidan();
   testForbehallEnGang();
   testIngetTakLoggrader();
+  testTomtextDoljsNarListaHarRader();
+  testMatareAdressKortasTillFilnamn();
+  testForbehallVillkorat();
   if (fel) process.exit(1);
   console.log('Alla tester OK');
 }

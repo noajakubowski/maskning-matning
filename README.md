@@ -1,5 +1,8 @@
 ## Börja här
 
+Webbdemo: [körs helt i webbläsaren](https://noajakubowski.github.io/maskning-matning/demo/).
+Ingen text skickas vidare.
+
 Det här repot är ett förhandsregistrerat mätsystem för ett verktyg som maskar
 personuppgifter i myndighetsdokument. Alla metodval som påverkar mätresultatet
 låstes i git innan den första skarpa körningen gjordes; commit-historiken är
@@ -14,7 +17,10 @@ i samma commit som den skarpa körningen. Metodval och låsningar finns i
 Verktyg som maskar personuppgifter i myndighetsdokument, och en mätrigg som
 redovisar hur ofta det misslyckas mot ett känt facit.
 
-Status: inga moduler är byggda. `verktyg/` innehåller ett granskningsskript.
+Status: M1 generator, M2 detektor och M4 mätning är byggda, med
+kommandoradsingångar i `cli/`. En skarp körning är fryst; rådata ligger i
+`docs/korningar/`. Webbdemo i `demo/`. M3 regelmotor utgick ur version ett
+(Tillägg N).
 
 ## Ordning
 
@@ -29,45 +35,53 @@ Ingen historikomskrivning. Ingen squash. Ingen force-push.
 | Mapp | Innehåll |
 |---|---|
 | docs/ | Förhandsregistrering och masterdokument |
+| docs/korningar/ | Rå utskrift från den skarpa körningen |
 | verktyg/ | Skript utanför mätkedjan; `kollisionskalla/` med råmaterial för hög 3 |
 | generator/ | M1 — syntetiska dokument med facit; `kollisionslista.md` för hög 3 |
 | detektor/ | M2 — mönster- och lexikondetektor |
-| regelmotor/ | M3 — regel-id och hash |
+| regelmotor/ | M3 utgick ur version ett (Tillägg N). Mappen är tom. |
 | matning/ | M4 — poängsättning mot facit |
 | test/ | Tester, inklusive spärr mot import över modulgräns |
 | cli/ | Ingång från terminalen |
+| demo/ | Webbdemo som kör detektorn i webbläsaren |
 
 Ingen delad lib/. Generatorn och detektorerna delar ingen kod och inga listor.
 
-## Dokumentationens tre filer
+## Dokumentationens filer
 
 | Fil | Roll |
 |---|---|
 | `docs/forhandsregistrering.md` | Append-only. Låser det som påverkar mätresultatet. |
 | `docs/gallande-varden.md` | Vilka värden som gäller nu vid konflikt mellan avsnitt. |
 | `docs/byggspec.md` | Hur modulerna byggs. Får ändras fritt. |
+| `docs/filterregel.md` | Masterdokument. Namnkälla, licens och filterregel. |
+| `docs/fro.md` | Frö för den skarpa körningen. Commitades före körningen. |
+| `docs/resultat.md` | Siffror från den skarpa mätningen. |
+| `docs/korningar/` | Rå utskrift från den skarpa körningen. |
 
 ## Licens och källor
 
 Namnmaterial härleds ur SCB:s namnstatistik. Bearbetningen är vår egen;
 SCB ansvarar inte för den och anges därför inte som källa till de härledda
-listorna. Detaljer i förhandsregistreringen.
+listorna. Detaljer i [`docs/filterregel.md`](docs/filterregel.md).
 
 ## Körmiljö — kända fällor
 
-Upptäckt under uppsättningen. Skrivs här för att nästa session inte ska
-behöva upptäcka dem igen.
+Observerade under uppsättningen, i en miljö som sedan förändrats. De är
+fällor som redan kostat en session, inte ett påstående om vad som är
+installerat nu. Skrivs här för att nästa session inte ska behöva upptäcka
+dem igen.
 
 | Fälla | Gör så här i stället |
 |---|---|
-| `sha256sum` finns inte på macOS. Under `set -e` avbryter skriptet mitt i. | `shasum -a 256` |
-| `grep` är ugrep på den här maskinen. Långa teckenklassrepetitioner som `[^<>]{0,120}` över UTF-8 spräcker komplexitetsgränsen och hänger tills kommandot timar ut. | Textutvinning ur HTML och XML görs i Python, inte med `grep -oE`. |
-| `set -euo pipefail` avbryter **inte** vid fel på den här maskinen. Skalet rapporterar errexit som påslaget, och `$-` innehåller `e`, men körningen fortsätter ändå efter ett kommando som avslutar med kod skild från noll. | Avsluta varje kontroll med `|| { echo "AVBRYT: <skäl>"; exit 1; }`. Alternativt: lägg skriptet i en fil och kör `zsh skript.sh` — i en riktig subshell fungerar `set -e` som avsett. |
-| zsh har MULTIOS påslaget. Konstruktionen `2>&1 >/dev/null` omdirigerar inte — den **duplicerar** utdata till flera mål. En kontroll av vilken ström en rad hamnar på ger då fel svar: samma rad syns på båda. | Fånga strömmarna i separata filer: `kommando >/tmp/ut.txt 2>/tmp/fel.txt` och läs dem var för sig. |
+| `sha256sum` fanns inte. Under `set -e` avbröt skriptet mitt i. | `shasum -a 256` |
+| `grep` var ugrep. Långa teckenklassrepetitioner som `[^<>]{0,120}` över UTF-8 spräckte komplexitetsgränsen och hängde tills kommandot timade ut. | Textutvinning ur HTML och XML görs i Python, inte med `grep -oE`. |
+| `set -euo pipefail` avbröt **inte** vid fel. Skalet rapporterade errexit som påslaget, och `$-` innehöll `e`, men körningen fortsatte ändå efter ett kommando som avslutade med kod skild från noll. | Avsluta varje kontroll med `|| { echo "AVBRYT: <skäl>"; exit 1; }`. Alternativt: lägg skriptet i en fil och kör `zsh skript.sh` — i en riktig subshell fungerar `set -e` som avsett. |
+| zsh hade MULTIOS påslaget. Konstruktionen `2>&1 >/dev/null` omdirigerade inte — den **duplicerade** utdata till flera mål. En kontroll av vilken ström en rad hamnade på gav då fel svar: samma rad syntes på båda. | Fånga strömmarna i separata filer: `kommando >/tmp/ut.txt 2>/tmp/fel.txt` och läs dem var för sig. |
 
 Samma mönster gäller MULTIOS-fällan: ett kommando som ser ut att göra en sak och gör en annan, och där felet inte syns förrän någon letar efter det.
 
-Detta är den farligaste av de tre fällorna, av samma skäl som gäller de andra två:
+Detta är den farligaste av de fyra fällorna, av samma skäl som gäller de andra tre:
 skyddet ser ut att fungera.
 
 Varje verifieringsskript i det här projektet har inletts med `set -euo pipefail` och
@@ -95,6 +109,6 @@ närmare granskning visar sig vara falsk — rätt åtgärd är då att laga
 kontrollen, inte att gå runt den. Ett avbrottsvillkor som ibland ignoreras är
 inget avbrottsvillkor.
 
-Fyra kontroller har hittills fällt på form i stället för sak (radbrytning,
-fetstil, kodmarkering, kolumnjustering). Framtida innehållsgranskning sker via
+Kontroller har fällt på form i stället för sak (radbrytning, fetstil,
+kodmarkering, kolumnjustering). Framtida innehållsgranskning sker via
 `verktyg/granska-dokument.py`, som normaliserar text innan jämförelse.
