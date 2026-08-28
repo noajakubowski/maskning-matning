@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maskning — detektor för personuppgifter</title>
+  <style>
+    :root {
+      --bg: #f3f0ea;
+      --yta: #fbfaf6;
+      --text: #1c1b19;
+      --muted: #6a6560;
+      --accent: rgb(36, 85, 68);
+      --pnr-bg: #d6e8ff;
+      --pnr-ram: #003a8c;
+      --tel-bg: #fde6c8;
+      --tel-ram: #8a3d00;
+      --namn-bg: #ead7f5;
+      --namn-ram: #5b1578;
+      --miss-bg: #f8e6e4;
+      --miss-ram: #7a1f18;
+      --fel-bg: #ffe08a;
+      --fel-ram: #7a5200;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    main {
+      height: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 8px 14px 8px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    h1 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      flex-shrink: 0;
+    }
+    .ingress {
+      flex-shrink: 0;
+      margin: 2px 0 4px;
+      font-size: 0.64rem;
+      line-height: 1.25;
+      color: var(--muted);
+    }
+    .ingress p { margin: 0 0 0.1rem; }
+    .ingress-tre { margin: 0.12rem 0; }
+    .ingress-tre p { margin: 0 0 0.08rem; }
+    .ingress strong { font-weight: 600; }
+    .verktyg {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 0.4rem 0.55rem;
+      margin-bottom: 2px;
+      flex-shrink: 0;
+    }
+    .verktyg button {
+      font: inherit;
+      font-size: 0.82rem;
+      padding: 0.22rem 0.55rem;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .verktyg button:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+    #lage-knapp,
+    #testa-matare {
+      font: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.4rem 0.85rem;
+      border: 2px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    #testa-matare { margin-left: auto; }
+    .egen-yta {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin: 0 0.5rem 0 0.4rem;
+    }
+    .egen-rad {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      min-width: 0;
+    }
+    #egen-falt {
+      flex: 1;
+      min-width: 6rem;
+      height: 2.2rem;
+      resize: none;
+      font: inherit;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.35rem;
+      border: 1px solid var(--accent);
+      background: var(--yta);
+      color: var(--text);
+    }
+    .egen-not {
+      margin: 0;
+      font-size: 0.62rem;
+      line-height: 1.25;
+      color: var(--muted);
+    }
+    .arbetsyta {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .egen-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .egen-overlay[hidden] { display: none; }
+    .egen-huvud {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+      margin-bottom: 4px;
+    }
+    .egen-huvud strong { font-size: 0.8rem; }
+    #egen-fynd { font-size: 0.78rem; color: var(--muted); }
+    #egen-stang { margin-left: auto; }
+    .egen-huvud button {
+      font: inherit;
+      font-size: 0.82rem;
+      padding: 0.22rem 0.55rem;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    #egen-dokument { flex: 1; min-height: 0; }
+    #dok-lage {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .slump-forklaring {
+      flex-shrink: 0;
+      margin: 0 0 6px;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .legend {
+      flex-shrink: 0;
+      margin: 0 0 4px;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+    .legend span { padding: 0 0.12em; }
+    .legend .l-pnr {
+      background: var(--pnr-bg);
+      text-decoration: underline solid var(--pnr-ram);
+    }
+    .legend .l-tel {
+      background: var(--tel-bg);
+      text-decoration: underline dashed var(--tel-ram);
+    }
+    .legend .l-namn {
+      background: var(--namn-bg);
+      text-decoration: underline dotted var(--namn-ram);
+    }
+    .legend .l-fel {
+      background: var(--fel-bg);
+      text-decoration: underline wavy var(--fel-ram);
+    }
+    .spalter {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      gap: 4px 14px;
+    }
+    .spalt {
+      display: grid;
+      grid-template-rows: subgrid;
+      grid-row: 1 / -1;
+      min-width: 0;
+      min-height: 0;
+    }
+    .spalt h2 {
+      margin: 0;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .spalt .prov {
+      margin: 0;
+      font-size: 0.68rem;
+      line-height: 1.3;
+      color: var(--muted);
+    }
+    .dokument {
+      min-height: 0;
+      overflow: auto;
+      background: var(--yta);
+      padding: 0.5rem 0.6rem;
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 0.76rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    mark.fynd {
+      color: inherit;
+      padding: 0 0.05em;
+    }
+    mark.typ-personnummer {
+      background: var(--pnr-bg);
+      border: 1px solid var(--pnr-ram);
+      text-decoration: underline solid var(--pnr-ram);
+      text-underline-offset: 2px;
+    }
+    mark.typ-telefonnummer {
+      background: var(--tel-bg);
+      border: 1px dashed var(--tel-ram);
+      text-decoration: underline dashed var(--tel-ram);
+      text-underline-offset: 2px;
+    }
+    mark.typ-personnamn {
+      background: var(--namn-bg);
+      border: 1px dotted var(--namn-ram);
+      text-decoration: underline dotted var(--namn-ram);
+      text-underline-offset: 2px;
+    }
+    mark.felflagg {
+      background: var(--fel-bg);
+      border: 2px double var(--fel-ram);
+      text-decoration: underline wavy var(--fel-ram);
+      text-underline-offset: 2px;
+    }
+    body.lage-maskerat mark.fynd {
+      background: #1a1a1a;
+      color: #1a1a1a;
+      border-color: #1a1a1a;
+      text-decoration-color: #1a1a1a;
+      user-select: none;
+    }
+    .resultat-spalt {
+      overflow: visible;
+      margin-top: 4px;
+      font-size: 0.75rem;
+      line-height: 1.3;
+    }
+    .siffror { color: var(--muted); }
+    .siffror .tal {
+      display: inline-block;
+      padding: 0 0.28em;
+      border: 1px solid;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .tal.hittade { border-color: var(--accent); background: #e4eee8; }
+    .tal.fel { border-color: var(--fel-ram); background: var(--fel-bg); }
+    .tal.miss { border-color: var(--miss-ram); background: var(--miss-bg); }
+    .intresse {
+      margin-top: 2px;
+      color: var(--text);
+    }
+    .natverk-panel {
+      flex-shrink: 0;
+      margin-top: 4px;
+      padding: 1px 10px 1px;
+      background: #eae6de;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .anslutning {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      flex-shrink: 0;
+    }
+    .lampa {
+      width: 0.7rem;
+      height: 0.7rem;
+      border-radius: 50%;
+      background: #8a8a8a;
+      flex-shrink: 0;
+    }
+    .lampa.pa { background: #1f9a42; }
+    .lampa.av { background: #8a8a8a; }
+    .natverk-kalla {
+      flex-shrink: 0;
+    }
+    .natverk-kalla h3 {
+      display: block;
+      margin: 0;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .natverk-kalla .status {
+      display: block;
+      margin: 0;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+    .natverk-not {
+      margin: 0;
+      font-size: 0.6rem;
+      line-height: 1.2;
+      color: var(--muted);
+    }
+    #lista-matare, #lista-forsok {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 0.72rem;
+      line-height: 1.35;
+      max-height: 4.05em;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    #lista-forsok {
+      height: 4.05em;
+    }
+    #forsok-forbehall {
+      min-height: 1.3em;
+    }
+    #forsok-forbehall[hidden] {
+      visibility: hidden;
+      display: block;
+    }
+    #lista-matare li, #lista-forsok li {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .natverk-ordagrant {
+      flex-shrink: 0;
+      margin: 0;
+      font-size: 0.6rem;
+      line-height: 1.2;
+      color: var(--muted);
+    }
+    #skada-info:empty { display: none; }
+  </style>
+</head>
+<body class="lage-maskerat">
+  <main>
+    <h1>Maskning</h1>
+    <div class="ingress" id="ingress">
+      <p>Verktyget letar personuppgifter i text, här på påhittade myndighetshandlingar i tre versioner – och maskar dem.</p>
+      <div class="ingress-tre">
+        <p>Ren text — uppgifterna står som de ska. Namnet <strong data-exempel>Margareta</strong> ska hittas.</p>
+        <p>Skadad text — tecken har ändrats som när papper skannas: <strong data-exempel>Jona</strong> har blivit <strong data-exempel>J0na</strong>. Skadan träffar en del av uppgifterna, inte alla: 195 av 273 handlingar har minst en skadad uppgift, 78 är oförändrade.</p>
+        <p>Namnkollisioner — samma ord är både namn och vanligt ord: <strong data-exempel>Mark</strong> som sökande, <strong data-exempel>mark</strong> som markyta.</p>
+      </div>
+      <p>Handlingarna är påhittade. Det är enda sättet att veta vad som borde hittas, och därmed vad verktyget missar.</p>
+    </div>
+
+    <div class="verktyg">
+      <button type="button" id="foregaende">Föregående</button>
+      <button type="button" id="nasta">Nästa</button>
+      <button type="button" id="nasta-skada">Nästa med skada</button>
+      <button type="button" id="slumpa">Slumpa dokument</button>
+      <span id="dok-lage"></span>
+      <div class="egen-yta">
+        <div class="egen-rad">
+          <textarea id="egen-falt" rows="2" placeholder="Klistra in egen text"></textarea>
+          <button type="button" id="egen-exempel">Klistra in exempeltext</button>
+          <button type="button" id="egen-kor">Kör på egen text</button>
+        </div>
+        <p class="egen-not">Texten stannar i webbläsaren; loggen nedanför visar det medan du kör. För egen text finns inget facit: du ser vad verktyget hittade, aldrig vad det missade. Siffrorna i mätningen gäller därför inte här.</p>
+      </div>
+      <button type="button" id="lage-knapp">Visa vad verktyget hittade</button>
+    </div>
+    <p class="slump-forklaring">Hela korpusen ligger i filen. Hoppa vart du vill — inget urval är gjort i förväg.</p>
+
+    <div class="legend" aria-label="Färgförklaring">
+      <span class="l-pnr">personnummer</span>
+      <span class="l-tel">telefonnummer</span>
+      <span class="l-namn">personnamn</span>
+      <span class="l-fel">felflaggat</span>
+    </div>
+
+    <div class="arbetsyta">
+    <div class="spalter">
+      <section class="spalt" id="spalt-1" data-hog="1">
+        <h2>ren text</h2>
+        <p class="prov">Prövar om verktyget hittar det som lagts in när texten är oskadad.</p>
+        <div class="dokument" id="dok-1"></div>
+        <div class="resultat-spalt" id="res-1"></div>
+      </section>
+      <section class="spalt" id="spalt-2" data-hog="2">
+        <h2>skadad text</h2>
+        <p class="prov">Prövar samma handling efter att tecken ändrats, som när en handling skannats.<span id="skada-info"></span></p>
+        <div class="dokument" id="dok-2"></div>
+        <div class="resultat-spalt" id="res-2"></div>
+      </section>
+      <section class="spalt spalt-3" id="spalt-3" data-hog="3">
+        <h2>namnkollisioner</h2>
+        <p class="prov">Prövar vanliga ord som också är namn: namnet ska täckas, ordet ska inte.</p>
+        <div class="dokument" id="dok-3"></div>
+        <div class="resultat-spalt" id="res-3"></div>
+      </section>
+    </div>
+    <div id="egen-overlay" class="egen-overlay" hidden>
+      <div class="egen-huvud">
+        <strong>Egen text</strong>
+        <span id="egen-fynd"></span>
+        <button type="button" id="egen-stang">Stäng</button>
+      </div>
+      <div class="dokument" id="egen-dokument"></div>
+    </div>
+    </div>
+
+    <section class="natverk-panel" aria-label="Nätverksmätare">
+      <div class="anslutning">
+        <span id="lampa" class="lampa" aria-hidden="true"></span>
+        <span id="anslutning-text"></span>
+        <button type="button" id="testa-matare">Testa loggen</button>
+      </div>
+      <div class="natverk-kalla">
+        <h3>Webbläsarens egen mätning</h3>
+        <p id="matare-status" class="status">inga anrop sedan sidan laddades</p>
+        <ul id="lista-matare"></ul>
+        <p class="natverk-not">Sidan kan inte skriva till den här listan.</p>
+      </div>
+      <div class="natverk-kalla">
+        <h3>Sidans egna försök</h3>
+        <p id="forsok-status" class="status">sidan har inte försökt något anrop</p>
+        <ul id="lista-forsok"></ul>
+        <p id="forsok-forbehall" class="natverk-not" hidden>Webbläsaren stoppade anropet innan det gick ut på nätet. Då finns det ingenting för den övre mätningen att registrera.</p>
+      </div>
+      <p class="natverk-ordagrant">Övre listan är webbläsarens egen räkning av allt sidan hämtar. Den har inte rört sig sedan sidan laddades, trots att datorn är uppkopplad.</p>
+      <p class="natverk-ordagrant">Tryck på knappen så gör sidan en ansats — då syns skillnaden mot listan som stått still medan du bläddrat och verktyget arbetat.</p>
+    </section>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="detektor-webb.js"></script>
+  <script>
+    (function () {
+      var TYP_ETIKETT = {
+        personnummer: 'personnummer',
+        telefonnummer: 'telefonnummer',
+        personnamn: 'personnamn'
+      };
+      var alla = (typeof DEMODATA !== 'undefined' && DEMODATA.dokument) ? DEMODATA.dokument : [];
+      var perHog = { 1: [], 2: [], 3: [] };
+      var i;
+      for (i = 0; i < alla.length; i++) {
+        if (perHog[alla[i].hog]) perHog[alla[i].hog].push(alla[i]);
+      }
+      var antal = Math.min(perHog[1].length, perHog[2].length, perHog[3].length);
+      var index = 0;
+      var maskerat = true;
+      var observerStart = performance.now();
+      var seddaResurser = {};
+
+      function escapeHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function overlappar(a0, a1, b0, b1) {
+        return a0 < b1 && a1 > b0;
+      }
+
+      function overlapparFacit(s, facit) {
+        var k, p;
+        for (k = 0; k < facit.length; k++) {
+          p = facit[k];
+          if (overlappar(s.start, s.end, p.startposition, p.slutposition)) return true;
+        }
+        return false;
+      }
+
+      function arKollisionsord(strang, facit) {
+        var t = strang.toLowerCase();
+        var k, p;
+        for (k = 0; k < facit.length; k++) {
+          p = facit[k];
+          if ((p['undertyp eller ark'] || '') === 'kollisionsord' &&
+              (p['ursprunglig sträng'] || '').toLowerCase() === t) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function flaggSpann(dok) {
+        var r = detekteraDokument(dok.id, dok.text);
+        var allaFlaggor = r.monster.concat(r.lexikon);
+        return slaaIhopSpann(allaFlaggor.map(function (f) {
+          return { start: f.startposition, end: f.slutposition, typ: f.typ };
+        }));
+      }
+
+      function rita(text, spann, facit, utanFacit) {
+        var cps = Array.from(text);
+        var n = cps.length;
+        var at = new Array(n);
+        var s, j, html, klass, fel;
+        for (i = 0; i < spann.length; i++) {
+          s = spann[i];
+          for (j = s.start; j < s.end && j < n; j++) at[j] = s;
+        }
+        html = '';
+        i = 0;
+        while (i < n) {
+          if (!at[i]) {
+            j = i;
+            while (j < n && !at[j]) j++;
+            html += escapeHtml(cps.slice(i, j).join(''));
+            i = j;
+          } else {
+            s = at[i];
+            j = Math.min(s.end, n);
+            fel = !utanFacit && !overlapparFacit(s, facit);
+            klass = s.typer.map(function (t) { return 'typ-' + t; }).join(' ');
+            if (fel) klass += ' felflagg';
+            html += '<mark class="fynd ' + klass + '">' + escapeHtml(cps.slice(i, j).join('')) + '</mark>';
+            i = j;
+          }
+        }
+        return html;
+      }
+
+      function bedom(dok, spann) {
+        var facit = dok.facit || [];
+        var hittade = 0;
+        var missade = [];
+        var felLista = [];
+        var p, k, s, tackt, strang;
+        for (i = 0; i < facit.length; i++) {
+          p = facit[i];
+          tackt = false;
+          for (k = 0; k < spann.length; k++) {
+            if (overlappar(spann[k].start, spann[k].end, p.startposition, p.slutposition)) {
+              tackt = true;
+              break;
+            }
+          }
+          if (tackt) hittade++;
+          else missade.push(p);
+        }
+        for (k = 0; k < spann.length; k++) {
+          s = spann[k];
+          if (overlapparFacit(s, facit)) continue;
+          strang = Array.from(dok.text).slice(s.start, s.end).join('');
+          felLista.push({
+            text: strang,
+            arKollision: arKollisionsord(strang, facit)
+          });
+        }
+        return { hittade: hittade, av: facit.length, missade: missade, felLista: felLista };
+      }
+
+      function resultatHtml(b, hog) {
+        var html, extra, p, strang, j, koll;
+        html = '<div class="siffror">hittade <span class="tal hittade">' + b.hittade + '/' + b.av +
+          '</span> · felflaggade <span class="tal fel">' + b.felLista.length +
+          '</span> · missade <span class="tal miss">' + b.missade.length + '</span></div>';
+        extra = '';
+        if (b.missade.length) {
+          p = b.missade[0];
+          strang = p['skadad sträng'] || p['ursprunglig sträng'] || '';
+          extra = 'missade ' + (TYP_ETIKETT[p.typ] || p.typ) + ' ' + strang;
+        }
+        if (hog === 3) {
+          koll = [];
+          for (j = 0; j < b.felLista.length; j++) {
+            if (b.felLista[j].arKollision) koll.push(b.felLista[j].text);
+          }
+          if (koll.length) {
+            strang = 'flaggade det vanliga ordet ' + koll[0];
+            extra = extra ? extra + ' · ' + strang : strang;
+          }
+        }
+        if (extra) html += '<div class="intresse">' + escapeHtml(extra) + '</div>';
+        return html;
+      }
+
+      function visaSpalt(hog, dok) {
+        var spann, b;
+        if (!dok) {
+          document.getElementById('dok-' + hog).textContent = '';
+          document.getElementById('res-' + hog).textContent = '';
+          return;
+        }
+        spann = flaggSpann(dok);
+        b = bedom(dok, spann);
+        document.getElementById('dok-' + hog).innerHTML = rita(dok.text, spann, dok.facit || []);
+        document.getElementById('res-' + hog).innerHTML = resultatHtml(b, hog);
+      }
+
+      function visa() {
+        var d1 = perHog[1][index];
+        var d2 = perHog[2][index];
+        var d3 = perHog[3][index];
+        document.getElementById('dok-lage').textContent =
+          'dokument ' + (index + 1) + ' av ' + antal +
+          ' · id ' + (d1 && d1.id ? d1.id : '—');
+        document.getElementById('foregaende').disabled = index <= 0;
+        document.getElementById('nasta').disabled = index >= antal - 1;
+        document.getElementById('lage-knapp').textContent = maskerat
+          ? 'Visa vad verktyget hittade'
+          : 'Visa maskerat resultat';
+        document.body.classList.toggle('lage-maskerat', maskerat);
+        var info = document.getElementById('skada-info');
+        if (d1 && d2 && d1.text === d2.text) {
+          info.textContent = ' Ingen av uppgifterna i just detta dokument råkade skadas.';
+        } else {
+          info.textContent = '';
+        }
+        visaSpalt(1, d1);
+        visaSpalt(2, d2);
+        visaSpalt(3, d3);
+        if (egenOppen) ritaEgen();
+      }
+
+      function bokstavByttMotSiffra(a, b) {
+        if (!a || !b || a === b) return false;
+        var A = Array.from(a);
+        var B = Array.from(b);
+        var n, pos, x, y, xD, yD, xL, yL;
+        if (A.length !== B.length) return false;
+        n = 0;
+        for (pos = 0; pos < A.length; pos++) {
+          if (A[pos] === B[pos]) continue;
+          n++;
+          x = A[pos];
+          y = B[pos];
+          xD = /\d/.test(x);
+          yD = /\d/.test(y);
+          xL = /[A-Za-zÅÄÖåäö]/.test(x);
+          yL = /[A-Za-zÅÄÖåäö]/.test(y);
+          if (!((xD && yL) || (xL && yD))) return false;
+        }
+        return n >= 1;
+      }
+
+      function overlapparPost(r, post) {
+        var allaFlaggor = r.monster.concat(r.lexikon);
+        var k, f;
+        for (k = 0; k < allaFlaggor.length; k++) {
+          f = allaFlaggor[k];
+          if (overlappar(f.startposition, f.slutposition, post.startposition, post.slutposition)) return true;
+        }
+        return false;
+      }
+
+      function hittaIngressExempel() {
+        var g, dok, namn, r, p, dok2, ord, re, m, start, namnSlice;
+        var ut = { ren: null, skadad: null, kollision: null, granskade: { ren: 0, skadad: 0, kollision: 0 } };
+        for (g = 0; g < perHog[1].length; g++) {
+          dok = perHog[1][g];
+          namn = (dok.facit || []).filter(function (x) { return x.typ === 'personnamn'; });
+          if (!namn.length) continue;
+          ut.granskade.ren++;
+          r = detekteraDokument(dok.id, dok.text);
+          for (i = 0; i < namn.length; i++) {
+            if (overlapparPost(r, namn[i])) {
+              ut.ren = { id: dok.id, strang: namn[i]['ursprunglig sträng'] };
+              break;
+            }
+          }
+          if (ut.ren) break;
+        }
+        for (g = 0; g < perHog[2].length; g++) {
+          dok2 = perHog[2][g];
+          ut.granskade.skadad++;
+          for (i = 0; i < (dok2.facit || []).length; i++) {
+            p = dok2.facit[i];
+            if (p.typ !== 'personnamn') continue;
+            if (bokstavByttMotSiffra(p['ursprunglig sträng'], p['skadad sträng'])) {
+              ut.skadad = { id: dok2.id, orig: p['ursprunglig sträng'], skadad: p['skadad sträng'] };
+              break;
+            }
+          }
+          if (ut.skadad) break;
+        }
+        for (g = 0; g < perHog[3].length; g++) {
+          dok = perHog[3][g];
+          ut.granskade.kollision++;
+          namn = (dok.facit || []).filter(function (x) {
+            return (x['undertyp eller ark'] || '') === 'kollisionsord';
+          });
+          if (!namn.length) continue;
+          p = namn[0];
+          ord = (p['ursprunglig sträng'] || '').toLowerCase();
+          namnSlice = Array.from(dok.text).slice(p.startposition, p.slutposition).join('');
+          re = new RegExp('(?<![A-Za-zÅÄÖåäö])' + ord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![A-Za-zÅÄÖåäö])', 'g');
+          while ((m = re.exec(dok.text)) !== null) {
+            start = Array.from(dok.text.slice(0, m.index)).length;
+            if (start < p.startposition || start >= p.slutposition) {
+              ut.kollision = { id: dok.id, namn: namnSlice, ord: m[0] };
+              break;
+            }
+          }
+          if (ut.kollision) break;
+        }
+        console.log('ingress-exempel', JSON.stringify(ut));
+        return ut;
+      }
+
+      document.getElementById('foregaende').addEventListener('click', function () {
+        if (index > 0) { index--; visa(); }
+      });
+      document.getElementById('nasta').addEventListener('click', function () {
+        if (index < antal - 1) { index++; visa(); }
+      });
+      document.getElementById('nasta-skada').addEventListener('click', function () {
+        var k, j, hittad = -1;
+        for (k = 1; k <= antal; k++) {
+          j = (index + k) % antal;
+          if (perHog[1][j] && perHog[2][j] && perHog[1][j].text !== perHog[2][j].text) {
+            hittad = j;
+            break;
+          }
+        }
+        if (hittad >= 0) { index = hittad; visa(); }
+      });
+      document.getElementById('slumpa').addEventListener('click', function () {
+        index = Math.floor(Math.random() * antal);
+        visa();
+      });
+      document.getElementById('lage-knapp').addEventListener('click', function () {
+        maskerat = !maskerat;
+        visa();
+      });
+
+      var egenOppen = false;
+      var egenText = '';
+      function strangUrDokument(dokId, typ) {
+        var k, j, dok, p;
+        for (k = 1; k <= 3; k++) {
+          for (j = 0; j < perHog[k].length; j++) {
+            dok = perHog[k][j];
+            if (dok.id !== dokId) continue;
+            for (p = 0; p < (dok.facit || []).length; p++) {
+              if (dok.facit[p].typ === typ) {
+                return dok.facit[p]['ursprunglig sträng'] || dok.facit[p]['skadad sträng'] || '';
+              }
+            }
+          }
+        }
+        return '';
+      }
+      function byggExempeltext() {
+        var namn1 = strangUrDokument('doc-0002', 'personnamn');
+        var pnr1 = strangUrDokument('doc-0002', 'personnummer');
+        var tel1 = strangUrDokument('doc-0002', 'telefonnummer');
+        var namn2 = strangUrDokument('doc-0003', 'personnamn');
+        var tel2 = strangUrDokument('doc-0003', 'telefonnummer');
+        return 'Hej!\n\nJag hittade en lapp vid kaffeautomaten. Där stod att ' + namn1 +
+          ' kommer förbi efter lunch, personnummer ' + pnr1 +
+          ', och att hon vill att vi ringer ' + tel1 + ' om dörren är låst.\n\n' +
+          namn2 + ' hade klottrat i kanten att tåget är sent och att ' + tel2 +
+          ' gäller tills vidare.\n\nVi tar det i fikarummet, inte i någon blankett.';
+      }
+      function raknaFynd(spann) {
+        var n = { personnummer: 0, telefonnummer: 0, personnamn: 0 };
+        var k, t, s;
+        for (k = 0; k < spann.length; k++) {
+          s = spann[k];
+          for (t = 0; t < s.typer.length; t++) {
+            if (n[s.typer[t]] !== undefined) n[s.typer[t]]++;
+          }
+        }
+        return n;
+      }
+      function ritaEgen() {
+        var spann = flaggSpann({ id: 'egen-text', text: egenText });
+        var n = raknaFynd(spann);
+        document.getElementById('egen-dokument').innerHTML = rita(egenText, spann, [], true);
+        document.getElementById('egen-fynd').textContent =
+          'personnummer ' + n.personnummer +
+          ' · telefonnummer ' + n.telefonnummer +
+          ' · personnamn ' + n.personnamn;
+      }
+      document.getElementById('egen-exempel').addEventListener('click', function () {
+        document.getElementById('egen-falt').value = byggExempeltext();
+      });
+      document.getElementById('egen-kor').addEventListener('click', function () {
+        egenText = document.getElementById('egen-falt').value;
+        egenOppen = true;
+        document.getElementById('egen-overlay').hidden = false;
+        ritaEgen();
+      });
+      document.getElementById('egen-stang').addEventListener('click', function () {
+        egenOppen = false;
+        document.getElementById('egen-overlay').hidden = true;
+      });
+
+      var matareAntal = 0;
+      function pad2(n) {
+        return (n < 10 ? '0' : '') + n;
+      }
+      function klockaFor(entry) {
+        var orig = (typeof performance.timeOrigin === 'number') ? performance.timeOrigin : Date.now();
+        var d = new Date(orig + entry.startTime);
+        return pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+      }
+      function klockaNu() {
+        var d = new Date();
+        return pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+      }
+      function laggMatareFranObservator(entry) {
+        var key = entry.name + '\t' + String(entry.startTime);
+        if (seddaResurser[key]) return;
+        seddaResurser[key] = true;
+        var li = document.createElement('li');
+        li.textContent = klockaFor(entry) + '  ' + entry.name;
+        document.getElementById('lista-matare').appendChild(li);
+        matareAntal += 1;
+        document.getElementById('matare-status').hidden = true;
+      }
+      function laggForsok(text) {
+        document.getElementById('forsok-status').hidden = true;
+        var li = document.createElement('li');
+        li.textContent = text;
+        var ul = document.getElementById('lista-forsok');
+        ul.appendChild(li);
+        ul.scrollTop = ul.scrollHeight;
+      }
+      function kortAdress(adress) {
+        var s = String(adress);
+        var p = s.indexOf('://');
+        if (p >= 0) s = s.slice(p + 3);
+        p = s.indexOf('/');
+        if (p >= 0) s = s.slice(0, p);
+        return s;
+      }
+      function rapporteraForsok(adress, lyckades, detalj) {
+        var slag;
+        if (lyckades) slag = 'lyckades';
+        else if (/blocked|not allowed|Load failed|Failed to fetch|NetworkError/i.test(String(detalj || ''))) slag = 'blockerat';
+        else slag = 'misslyckades';
+        laggForsok(klockaNu() + ' · ' + kortAdress(adress) + ' · ' + slag);
+        document.getElementById('forsok-forbehall').hidden = false;
+      }
+      function kopplaLogg() {
+        if (typeof PerformanceObserver === 'undefined') return;
+        var obs = new PerformanceObserver(function (list) {
+          var arr = list.getEntries();
+          var k;
+          for (k = 0; k < arr.length; k++) laggMatareFranObservator(arr[k]);
+        });
+        try {
+          obs.observe({ type: 'resource', buffered: true });
+        } catch (err) {
+          obs.observe({ entryTypes: ['resource'] });
+        }
+      }
+      function visaAnslutning() {
+        var pa = navigator.onLine;
+        var lampa = document.getElementById('lampa');
+        lampa.classList.toggle('pa', pa);
+        lampa.classList.toggle('av', !pa);
+        document.getElementById('anslutning-text').textContent = pa ? 'uppkopplad' : 'frånkopplad';
+      }
+      visaAnslutning();
+      window.addEventListener('online', visaAnslutning);
+      window.addEventListener('offline', visaAnslutning);
+      kopplaLogg();
+      document.getElementById('testa-matare').addEventListener('click', function () { var a='https://example.invalid/matare-test'; fetch(a).then(function(r){rapporteraForsok(a,true,String(r.status));}).catch(function(e){rapporteraForsok(a,false,(e&&e.message)?e.message:String(e));}); });
+
+      hittaIngressExempel();
+      visa();
+    })();
+  </script>
+</body>
+</html>
